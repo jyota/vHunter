@@ -188,7 +188,7 @@ pygame.init()
 pygame.font.init()
 clock = pygame.time.Clock()
 
-screen = pygame.display.set_mode((640, 480))
+screen = pygame.display.set_mode((640, 480), (DOUBLEBUF))
 pygame.display.update()
 pygame.mouse.set_visible(True)
 ourPiece = Piece("testchr.png", 3, [480, 32], 2, 2, PStats(), 'PLAYER', 32, 64)
@@ -219,12 +219,15 @@ if(len(sys.argv)>0):
 
 currentLayer = 0
 showDetails = True
+showScriptTiles = False
 offs_x, offs_y = (0, 0)
 currentScript = 0
 scriptTiles = []
 eventDelay = 750
 timeTicks = 0
 lastScriptEventTime = 0
+map_renderer = MapRenderer(ourMap)
+map_renderer.prepare_layers()
 
 for k in range(ourScript.header[0]):
 	if k != 0:
@@ -237,7 +240,7 @@ for k in range(ourScript.header[0]):
 
 while 1:
 
-	clock.tick(45) #keep the framerate at 60 or lower
+	clock.tick(60) #keep the framerate at 60 or lower
 	timeTicks = pygame.time.get_ticks()
 	#print clock.get_fps()	
 
@@ -254,7 +257,13 @@ while 1:
 			showDetails = False
 		else:
 			showDetails = True
-	
+
+	if key[pygame.K_z]:
+		if(showScriptTiles == True):
+			showScriptTiles = False
+		else:
+			showScriptTiles = True
+
 	if key[pygame.K_UP]:
 		ourPiece.moving = True
 		ourPiece.animoffset = 0
@@ -318,19 +327,21 @@ while 1:
 	if key[pygame.K_RSHIFT]: 
 		ourPiece.speed = 1
 	
-
-
 	if key[pygame.K_SPACE]:
 		if ourPiece.direction == 0:
 			if (ourScript.defs[ourScript.data[((ourPiece.pos[1]+30)/32)][((ourPiece.pos[0]+2)/32)]][1].find('TRIG') != -1):
 				#Example of calling a scripted function
 				#if(ourScript.defs[ourScript.data[((ourPiece.pos[1]+30)/32)][((ourPiece.pos[0]+2)/32)]][1].endswith('N')):
 					getattr(sys.modules[__name__], ourScript.defs[ourScript.data[((ourPiece.pos[1]+30)/32)][((ourPiece.pos[0]+2)/32)]][1])()
+					map_renderer = MapRenderer(ourMap)
+					map_renderer.prepare_layers()
 					
 			elif (ourScript.defs[ourScript.data[((ourPiece.pos[1]+30)/32)][((ourPiece.pos[0]+30)/32)]][1].find('TRIG') != -1):
 				#Example of calling a scripted function
 				#if (ourScript.defs[ourScript.data[((ourPiece.pos[1]+30)/32)][((ourPiece.pos[0]+28)/32)]][1].endswith('P')):
 					getattr(sys.modules[__name__], ourScript.defs[ourScript.data[((ourPiece.pos[1]+30)/32)][((ourPiece.pos[0]+28)/32)]][1])()
+					map_renderer = MapRenderer(ourMap)
+					map_renderer.prepare_layers()
 					
 
 		if ourPiece.direction == 1:
@@ -338,12 +349,16 @@ while 1:
 				#Example of calling a scripted function
 				#if(ourScript.defs[ourScript.data[((ourPiece.pos[1]+36)/32)][((ourPiece.pos[0]-4)/32)]][1].endswith('P')):
 					getattr(sys.modules[__name__], ourScript.defs[ourScript.data[((ourPiece.pos[1]+36)/32)][((ourPiece.pos[0]-4)/32)]][1])()
+					map_renderer = MapRenderer(ourMap)
+					map_renderer.prepare_layers()
 
 
 			elif (ourScript.defs[ourScript.data[((ourPiece.pos[1]+60)/32)][((ourPiece.pos[0]-4)/32)]][1].find('TRIG') != -1):
 				#Example of calling a scripted function
 				#if(ourScript.defs[ourScript.data[((ourPiece.pos[1]+60)/32)][((ourPiece.pos[0]-4)/32)]][1].endswith('P')):
 					getattr(sys.modules[__name__], ourScript.defs[ourScript.data[((ourPiece.pos[1]+60)/32)][((ourPiece.pos[0]-4)/32)]][1])()
+					map_renderer = MapRenderer(ourMap)
+					map_renderer.prepare_layers()
 					
 				
 		if ourPiece.direction == 2:
@@ -351,12 +366,16 @@ while 1:
 				#Example of calling a scripted function
 				#if(ourScript.defs[ourScript.data[((ourPiece.pos[1]+66)/32)][((ourPiece.pos[0]+2)/32)]][1].endswith('P')):
 					getattr(sys.modules[__name__], ourScript.defs[ourScript.data[((ourPiece.pos[1]+66)/32)][((ourPiece.pos[0]+2)/32)]][1])()
+					map_renderer = MapRenderer(ourMap)
+					map_renderer.prepare_layers()
 					
 
 			elif (ourScript.defs[ourScript.data[((ourPiece.pos[1]+66)/32)][((ourPiece.pos[0]+31)/32)]][1].find('TRIG') != -1):
 				#Example of calling a scripted function
 				#if(ourScript.defs[ourScript.data[((ourPiece.pos[1]+66)/32)][((ourPiece.pos[0]+31)/32)]][1].endswith('P')):
 					getattr(sys.modules[__name__], ourScript.defs[ourScript.data[((ourPiece.pos[1]+66)/32)][((ourPiece.pos[0]+31)/32)]][1])()
+					map_renderer = MapRenderer(ourMap)
+					map_renderer.prepare_layers()
 					
 
 		if ourPiece.direction == 3:
@@ -364,13 +383,17 @@ while 1:
 				#Example of calling a scripted function that affects Player (script item ends with P)
 				#if(ourScript.defs[ourScript.data[((ourPiece.pos[1]+31)/32)][((ourPiece.pos[0]+34)/32)]][1].endswith('P')):
 					getattr(sys.modules[__name__], ourScript.defs[ourScript.data[((ourPiece.pos[1]+31)/32)][((ourPiece.pos[0]+34)/32)]][1])()
+					map_renderer = MapRenderer(ourMap)
+					map_renderer.prepare_layers()
 					
 
 			elif (ourScript.defs[ourScript.data[((ourPiece.pos[1]+60)/32)][((ourPiece.pos[0]+34)/32)]][1].find('TRIG') != -1):
 				#Example of calling a scripted function that affects Player (script item ends with P)
 				#if(ourScript.defs[ourScript.data[((ourPiece.pos[1]+60)/32)][((ourPiece.pos[0]+34)/32)]][1].endswith('P')):
 					getattr(sys.modules[__name__], ourScript.defs[ourScript.data[((ourPiece.pos[1]+60)/32)][((ourPiece.pos[0]+34)/32)]][1])()
-					
+					map_renderer = MapRenderer(ourMap)
+					map_renderer.prepare_layers()
+
 
 	# Call functions for scripted tiles player walks on - determined by points near 'feet' of sprite
 	# Precedence goes from left of screen to right, so piece technically can't have two effects happening at once
@@ -385,8 +408,6 @@ while 1:
 		if "DOOR" not in (ourScript.defs[ourScript.data[((ourPiece.pos[1]+56)/32)][((ourPiece.pos[0]+26)/32)]][1]):
 			getattr(sys.modules[__name__], ourScript.defs[ourScript.data[((ourPiece.pos[1]+56)/32)][((ourPiece.pos[0]+26)/32)]][1])()
 
-
-
 	#Scrolling map logic
 	offs_x = ourPiece.pos[0] - 320
 	offs_y = ourPiece.pos[1] - 240
@@ -397,8 +418,8 @@ while 1:
 	if(ourPiece.pos[1] + 240 > (ourMap.header[4]*32)): offs_y = (ourMap.header[4]*32) - 480 
 	
 	screen.fill((0,0,0,0))
-	maprender.draw_map(screen,ourMap,offs_x, offs_y, 0)
-
+	#maprender.draw_map(screen,ourMap,offs_x, offs_y, 0)
+	map_renderer.render_layer(screen, offs_x, offs_y, 0)
 
 	# begin entity draw 
 	pHasDrawn = 0
@@ -425,11 +446,12 @@ while 1:
 		ourPiece.draw(screen,offs_x,offs_y)
 	
 	for j in range(1, ourMap.header[5]):
-		maprender.draw_map(screen,ourMap,offs_x,offs_y,j)
+		map_renderer.render_layer(screen, offs_x, offs_y, j)
 
 	ourPiece.moving = False
 	if(showDetails == True):
-		render_script_tiles(screen, ourScript, offs_x, offs_y, scriptTiles)
+		if(showScriptTiles == True):
+			render_script_tiles(screen, ourScript, offs_x, offs_y, scriptTiles)
 		screen = gui.draw_text_block(15, 15, screen, "Current Layer: " + str(currentLayer))
 		screen = gui.draw_text_block(15, 28, screen, "Current Script Item: " + str(ourScript.defs[currentScript][:]))
 		screen = gui.draw_text_block(15, 58, screen, "Current FPS: " + str(clock.get_fps()))
