@@ -1,3 +1,26 @@
+# main game concept:
+# you are a defender of the undead and monsters for a property
+# during the day you set up bombs and other defenses (perhaps with a time limit)
+# once time is up or set up is finished, night comes and the
+# monster hordes come lurking -- will your defenses protect the family you
+# have been hired to protect?
+# note: this will take some re-thinking of the engine, currently it's like
+# an RPG, moving character with the keyboard. the updated game could easily just
+# be something like:
+# 1) level intro screen/view level
+# 2) purchase items to protect family under a certain budget
+# 3) place items for defense
+# 4) monsters try to kill the family you were hired to set up defense for
+# for each dead monster could be some reward, and potential multiple rounds at a stage to survive
+# this requires no player piece to move around, just placement of items.
+# family can be on board, but probably just stationary and huddled up in home.
+# perhaps they will try to run away if the monsters get close enough or something.
+
+# since partly implemented already, could flesh out the "place items for defense"
+# piece first...?
+# also, as a prototype, could just do the steps 3 & 4 & assess--
+# would start with a 'default' pack of items for the defense for the prototype
+
 import pygame
 import gui
 from gui import *
@@ -163,6 +186,7 @@ def HPDOWNP():
 	return
 
 def PLANTED_BOMB():
+	# need to add code to remove from tile when goes off
 	ourPiece.stats.hp = ourPiece.stats.hp - 100
 	return
 
@@ -305,6 +329,21 @@ while 1:
 					if(ourPiece.doesCollide(otherPieces)):
 						ourPiece.pos[0] = ourPiece.pos[0] + ourPiece.speed
 					break
+
+		if key[pygame.K_b]:
+			# player bomb planting code (toss about 2 tiles away)
+			if(ourPiece.direction == 0):
+				if(ourScript.data[((ourPiece.pos[1]+32)/32) - 2][((ourPiece.pos[0]+16)/32)] == 0):
+					ourScript.data[((ourPiece.pos[1]+32)/32) - 2][((ourPiece.pos[0]+16)/32)] = 8
+			if(ourPiece.direction == 1):
+				if(ourScript.data[((ourPiece.pos[1]+60)/32)][((ourPiece.pos[0] - 8)/32) - 1] == 0):
+					ourScript.data[((ourPiece.pos[1]+60)/32)][((ourPiece.pos[0] - 8)/32) - 1] = 8
+			if(ourPiece.direction == 2):
+				if(ourScript.data[((ourPiece.pos[1]+60)/32) + 2][((ourPiece.pos[0]+16)/32)] == 0):
+					ourScript.data[((ourPiece.pos[1]+60)/32) + 2][((ourPiece.pos[0]+16)/32)] = 8
+			if(ourPiece.direction == 3):
+				if(ourScript.data[((ourPiece.pos[1]+60)/32)][((ourPiece.pos[0]+40)/32) + 1] == 0):
+					ourScript.data[((ourPiece.pos[1]+60)/32)][((ourPiece.pos[0]+40)/32) + 1] = 8
 
 		if key[pygame.K_DOWN]:
 			ourPiece.moving = True
