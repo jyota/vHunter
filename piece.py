@@ -28,6 +28,11 @@ class Piece():
 		self.width = width
 		self.height = height		
 		self.colrect = pygame.Rect(initpos[0]+2, initpos[1]+36, 30,28)
+		self.exploding_image = pygame.image.load("guts.png").convert()
+		self.exploding_image.set_colorkey((0, 0, 0))
+		self.exploding = False
+		self.exploding_seq = range(1, 640, 16)
+		self.exploding_iterator = -1
 
 		#Based on 32x64 sprites
 		self.rect = (initpos[0], initpos[1], 32,64)
@@ -59,6 +64,8 @@ class Piece():
 		'''Move the object '''
 		#self.direction = direction
 		#self.speed = howfast
+		if self.stats.hp <= 0:
+			self.exploding = True
 		if redrawOnly == False:
 			if direction == 0:
 				self.pos[1] =  self.pos[1] - self.speed
@@ -80,6 +87,14 @@ class Piece():
 	def draw(self, surface, offsx, offsy):
 		if (self.rect[0]+32 - offsx < 0) or (self.rect[1]+64 - offsy < 0) or (self.rect[0] - offsx > 672) or (self.rect[1] - offsy > 480):
 			return
+		elif self.exploding == True:
+			# still need to touch this up more
+			surface.blit(self.exploding_image, (self.rect[0] - offsx - self.exploding_seq[self.exploding_iterator], self.rect[1] - offsy, self.rect[2]  - self.exploding_seq[self.exploding_iterator], self.rect[3]))
+			surface.blit(self.exploding_image, (self.rect[0] - offsx - self.exploding_seq[self.exploding_iterator], self.rect[1] - offsy - self.exploding_seq[self.exploding_iterator], self.rect[2], self.rect[3]))
+			surface.blit(self.exploding_image, (self.rect[0] - offsx, self.rect[1] - offsy, self.rect[2]  - self.exploding_seq[self.exploding_iterator], self.rect[3]))
+			surface.blit(self.exploding_image, (self.rect[0] - offsx, self.rect[1] - offsy + self.exploding_seq[self.exploding_iterator], self.rect[2], self.rect[3]))
+			if(self.exploding_iterator < len(self.exploding_seq)):
+				self.exploding_iterator = self.exploding_iterator + 1
 		else:
 			t = pygame.time.get_ticks()
 			if (t - self._last_update) > self._delay:
