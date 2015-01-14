@@ -222,9 +222,9 @@ ourPiece = Piece("testchr.png", 3, [480, 32], 2, 2, PStats(hp = 100), 'PLAYER', 
 ourEntities = entities()
 ourEntities.addEntity(Piece("baddie.png", 3, [320,200], 2, 1, PStats(), 'BADDIE', 32, 64))
 ourEntities.addEntity(Piece("baddie.png", 3, [360,260], 2, 1, PStats(), 'BADDIE2', 32, 64))
-ourEntities.addEntity(Piece("eilf2b.png", 3, [360,320], 2, 1, PStats(), 'BADDIE2', 32, 64))
-ourEntities.addEntity(Piece("baddie.png", 3, [352,200], 2, 1, PStats(), 'BADDIE2', 32, 64))
-ourEntities.addEntity(Piece("baddie.png", 3, [352,232], 2, 1, PStats(), 'BADDIE2', 32, 64))
+ourEntities.addEntity(Piece("eilf2b.png", 3, [360,320], 2, 1, PStats(), 'BADDIE3', 32, 64))
+ourEntities.addEntity(Piece("baddie.png", 3, [352,200], 2, 1, PStats(), 'BADDIE4', 32, 64))
+ourEntities.addEntity(Piece("baddie.png", 3, [352,232], 2, 1, PStats(), 'BADDIE5', 32, 64))
 
 #command line arguments
 if(len(sys.argv)>0):
@@ -277,7 +277,15 @@ while 1:
 	key=pygame.key.get_pressed()
 	if key[pygame.K_q]: 
 		sys.exit()
-			
+
+	if key[pygame.K_n] & ourPiece.exploded == True:
+		ourPiece.clear_death(hp = 100)
+		ourPiece.pos[0] = 480
+		ourPiece.pos[1] = 32
+		ourPiece.update(direction = 0, redrawOnly = True)
+		for piece in ourEntities._list:
+			piece.exploding = True
+	
 	if key[pygame.K_TAB]:
 		if(showDetails == True):
 			showDetails = False
@@ -289,163 +297,149 @@ while 1:
 			showScriptTiles = False
 		else:
 			showScriptTiles = True
-	
-	if key[pygame.K_UP]:
-		ourPiece.moving = True
-		ourPiece.animoffset = 0
-		ourPiece.direction = 0
-		if ourPiece.pos[1] < -32:
-			ourPiece.pos[1] = -32
 
-		if (ourScript.defs[ourScript.data[((ourPiece.pos[1]+33)/32)][((ourPiece.pos[0]+4)/32)]][1].startswith('C') == False) & (ourScript.defs[ourScript.data[((ourPiece.pos[1]+33)/32)][((ourPiece.pos[0]+28)/32)]][1].startswith('C') == False):
-			ourPiece.update(0)
-			for otherPieces in ourEntities._list:
-				if(ourPiece.doesCollide(otherPieces)):
-					ourPiece.pos[1] = ourPiece.pos[1] + ourPiece.speed
-				break
+	if ourPiece.exploding == False:
+		if key[pygame.K_UP]:
+			ourPiece.moving = True
+			ourPiece.animoffset = 0
+			ourPiece.direction = 0
+			if ourPiece.pos[1] < -32:
+				ourPiece.pos[1] = -32
 
-	if key[pygame.K_LEFT]:
-		ourPiece.moving = True
-		ourPiece.animoffset = 1
-		ourPiece.direction = 1
-		if ourPiece.pos[0] < 0:
-			ourPiece.pos[0] = 0
+			if (ourScript.defs[ourScript.data[((ourPiece.pos[1]+33)/32)][((ourPiece.pos[0]+4)/32)]][1].startswith('C') == False) & (ourScript.defs[ourScript.data[((ourPiece.pos[1]+33)/32)][((ourPiece.pos[0]+28)/32)]][1].startswith('C') == False):
+				ourPiece.update(0)
+				for otherPieces in ourEntities._list:
+					if(ourPiece.doesCollide(otherPieces)):
+						ourPiece.pos[1] = ourPiece.pos[1] + ourPiece.speed
+					break
 
-		if (ourScript.defs[ourScript.data[((ourPiece.pos[1]+36)/32)][((ourPiece.pos[0])/32)]][1].startswith('C') == False) & (ourScript.defs[ourScript.data[((ourPiece.pos[1]+60)/32)][((ourPiece.pos[0])/32)]][1].startswith('C') == False):
-			ourPiece.update(1)
-			for otherPieces in ourEntities._list:
-				if(ourPiece.doesCollide(otherPieces)):
-					ourPiece.pos[0] = ourPiece.pos[0] + ourPiece.speed
-				break
+		if key[pygame.K_LEFT]:
+			ourPiece.moving = True
+			ourPiece.animoffset = 1
+			ourPiece.direction = 1
+			if ourPiece.pos[0] < 0:
+				ourPiece.pos[0] = 0
 
-	if key[pygame.K_b]:
-		# player bomb planting code (toss about 2 tiles away)
-		if(ourPiece.direction == 0):
-			if(ourScript.data[((ourPiece.pos[1]+32)/32) - 2][((ourPiece.pos[0]+16)/32)] == 0):
-				ourScript.data[((ourPiece.pos[1]+32)/32) - 2][((ourPiece.pos[0]+16)/32)] = 8
-			if(ourPiece.direction == 1):
-				if(ourScript.data[((ourPiece.pos[1]+60)/32)][((ourPiece.pos[0] - 8)/32) - 1] == 0):
-					ourScript.data[((ourPiece.pos[1]+60)/32)][((ourPiece.pos[0] - 8)/32) - 1] = 8
-			if(ourPiece.direction == 2):
-				if(ourScript.data[((ourPiece.pos[1]+60)/32) + 2][((ourPiece.pos[0]+16)/32)] == 0):
-					ourScript.data[((ourPiece.pos[1]+60)/32) + 2][((ourPiece.pos[0]+16)/32)] = 8
-			if(ourPiece.direction == 3):
-				if(ourScript.data[((ourPiece.pos[1]+60)/32)][((ourPiece.pos[0]+40)/32) + 1] == 0):
-					ourScript.data[((ourPiece.pos[1]+60)/32)][((ourPiece.pos[0]+40)/32) + 1] = 8
+			if (ourScript.defs[ourScript.data[((ourPiece.pos[1]+36)/32)][((ourPiece.pos[0])/32)]][1].startswith('C') == False) & (ourScript.defs[ourScript.data[((ourPiece.pos[1]+60)/32)][((ourPiece.pos[0])/32)]][1].startswith('C') == False):
+				ourPiece.update(1)
+				for otherPieces in ourEntities._list:
+					if(ourPiece.doesCollide(otherPieces)):
+						ourPiece.pos[0] = ourPiece.pos[0] + ourPiece.speed
+					break
 
-	if key[pygame.K_DOWN]:
-		ourPiece.moving = True
-		ourPiece.animoffset = 2
-		ourPiece.direction = 2
-		if ourPiece.pos[1]+65 > ourScript.header[2]*32:
-			ourPiece.pos[1] = ourScript.header[2]*32- 65
-		elif (ourScript.defs[ourScript.data[((ourPiece.pos[1]+64)/32)][((ourPiece.pos[0]+4)/32)]][1].startswith('C') == False) & (ourScript.defs[ourScript.data[((ourPiece.pos[1]+64)/32)][((ourPiece.pos[0]+28)/32)]][1].startswith('C') == False):
-			ourPiece.update(2)
-			for otherPieces in ourEntities._list:
-				if(ourPiece.doesCollide(otherPieces)):
-					ourPiece.pos[1] = ourPiece.pos[1] - ourPiece.speed
-				break
+		if key[pygame.K_DOWN]:
+			ourPiece.moving = True
+			ourPiece.animoffset = 2
+			ourPiece.direction = 2
+			if ourPiece.pos[1]+65 > ourScript.header[2]*32:
+				ourPiece.pos[1] = ourScript.header[2]*32- 65
+			elif (ourScript.defs[ourScript.data[((ourPiece.pos[1]+64)/32)][((ourPiece.pos[0]+4)/32)]][1].startswith('C') == False) & (ourScript.defs[ourScript.data[((ourPiece.pos[1]+64)/32)][((ourPiece.pos[0]+28)/32)]][1].startswith('C') == False):
+				ourPiece.update(2)
+				for otherPieces in ourEntities._list:
+					if(ourPiece.doesCollide(otherPieces)):
+						ourPiece.pos[1] = ourPiece.pos[1] - ourPiece.speed
+					break
 
-	if key[pygame.K_RIGHT]:
-		ourPiece.moving = True
-		ourPiece.animoffset = 3
-		ourPiece.direction = 3
-		if ourPiece.pos[0]+33 > ourScript.header[1]*32:
-			ourPiece.pos[0] = ourScript.header[2]*32 - 33
-		elif (ourScript.defs[ourScript.data[((ourPiece.pos[1]+36)/32)][((ourPiece.pos[0]+32)/32)]][1].startswith('C') == False) & (ourScript.defs[ourScript.data[((ourPiece.pos[1]+60)/32)][((ourPiece.pos[0]+32)/32)]][1].startswith('C') == False):
-			ourPiece.update(3)
-			for otherPieces in ourEntities._list:
-				if(ourPiece.doesCollide(otherPieces)):
-					ourPiece.pos[0] = ourPiece.pos[0] - ourPiece.speed
-				break
-	
-	if key[pygame.K_LSHIFT]: 
-		ourPiece.speed = 3
-	else:
-		ourPiece.speed = 2
+		if key[pygame.K_RIGHT]:
+			ourPiece.moving = True
+			ourPiece.animoffset = 3
+			ourPiece.direction = 3
+			if ourPiece.pos[0]+33 > ourScript.header[1]*32:
+				ourPiece.pos[0] = ourScript.header[2]*32 - 33
+			elif (ourScript.defs[ourScript.data[((ourPiece.pos[1]+36)/32)][((ourPiece.pos[0]+32)/32)]][1].startswith('C') == False) & (ourScript.defs[ourScript.data[((ourPiece.pos[1]+60)/32)][((ourPiece.pos[0]+32)/32)]][1].startswith('C') == False):
+				ourPiece.update(3)
+				for otherPieces in ourEntities._list:
+					if(ourPiece.doesCollide(otherPieces)):
+						ourPiece.pos[0] = ourPiece.pos[0] - ourPiece.speed
+					break
+		
+		if key[pygame.K_LSHIFT]: 
+			ourPiece.speed = 3
+		else:
+			ourPiece.speed = 2
 
-	if key[pygame.K_RSHIFT]: 
-		ourPiece.speed = 1
-	
-	if key[pygame.K_SPACE]:
-		if ourPiece.direction == 0:
-			if (ourScript.defs[ourScript.data[((ourPiece.pos[1]+30)/32)][((ourPiece.pos[0]+2)/32)]][1].find('TRIG') != -1):
-			#Example of calling a scripted function
-			#if(ourScript.defs[ourScript.data[((ourPiece.pos[1]+30)/32)][((ourPiece.pos[0]+2)/32)]][1].endswith('N')):
-				getattr(sys.modules[__name__], ourScript.defs[ourScript.data[((ourPiece.pos[1]+30)/32)][((ourPiece.pos[0]+2)/32)]][1])()
-				map_renderer = MapRenderer(ourMap)
-				map_renderer.prepare_layers()
-					
-			elif (ourScript.defs[ourScript.data[((ourPiece.pos[1]+30)/32)][((ourPiece.pos[0]+30)/32)]][1].find('TRIG') != -1):
+		if key[pygame.K_RSHIFT]: 
+			ourPiece.speed = 1
+		
+		if key[pygame.K_SPACE]:
+			if ourPiece.direction == 0:
+				if (ourScript.defs[ourScript.data[((ourPiece.pos[1]+30)/32)][((ourPiece.pos[0]+2)/32)]][1].find('TRIG') != -1):
 				#Example of calling a scripted function
-				#if (ourScript.defs[ourScript.data[((ourPiece.pos[1]+30)/32)][((ourPiece.pos[0]+28)/32)]][1].endswith('P')):
-				getattr(sys.modules[__name__], ourScript.defs[ourScript.data[((ourPiece.pos[1]+30)/32)][((ourPiece.pos[0]+28)/32)]][1])()
-				map_renderer = MapRenderer(ourMap)
-				map_renderer.prepare_layers()
+				#if(ourScript.defs[ourScript.data[((ourPiece.pos[1]+30)/32)][((ourPiece.pos[0]+2)/32)]][1].endswith('N')):
+					getattr(sys.modules[__name__], ourScript.defs[ourScript.data[((ourPiece.pos[1]+30)/32)][((ourPiece.pos[0]+2)/32)]][1])()
+					map_renderer = MapRenderer(ourMap)
+					map_renderer.prepare_layers()
+						
+				elif (ourScript.defs[ourScript.data[((ourPiece.pos[1]+30)/32)][((ourPiece.pos[0]+30)/32)]][1].find('TRIG') != -1):
+					#Example of calling a scripted function
+					#if (ourScript.defs[ourScript.data[((ourPiece.pos[1]+30)/32)][((ourPiece.pos[0]+28)/32)]][1].endswith('P')):
+					getattr(sys.modules[__name__], ourScript.defs[ourScript.data[((ourPiece.pos[1]+30)/32)][((ourPiece.pos[0]+28)/32)]][1])()
+					map_renderer = MapRenderer(ourMap)
+					map_renderer.prepare_layers()
+						
+
+			if ourPiece.direction == 1:
+				if (ourScript.defs[ourScript.data[((ourPiece.pos[1]+36)/32)][((ourPiece.pos[0]-4)/32)]][1].find('TRIG') != -1):
+					#Example of calling a scripted function
+					#if(ourScript.defs[ourScript.data[((ourPiece.pos[1]+36)/32)][((ourPiece.pos[0]-4)/32)]][1].endswith('P')):
+					getattr(sys.modules[__name__], ourScript.defs[ourScript.data[((ourPiece.pos[1]+36)/32)][((ourPiece.pos[0]-4)/32)]][1])() 
+					map_renderer = MapRenderer(ourMap)
+					map_renderer.prepare_layers()
+
+
+				elif (ourScript.defs[ourScript.data[((ourPiece.pos[1]+60)/32)][((ourPiece.pos[0]-4)/32)]][1].find('TRIG') != -1):
+					#Example of calling a scripted function
+					#if(ourScript.defs[ourScript.data[((ourPiece.pos[1]+60)/32)][((ourPiece.pos[0]-4)/32)]][1].endswith('P')):
+					getattr(sys.modules[__name__], ourScript.defs[ourScript.data[((ourPiece.pos[1]+60)/32)][((ourPiece.pos[0]-4)/32)]][1])()
+					map_renderer = MapRenderer(ourMap)
+					map_renderer.prepare_layers()
+						
 					
+			if ourPiece.direction == 2:
+				if (ourScript.defs[ourScript.data[((ourPiece.pos[1]+66)/32)][((ourPiece.pos[0]+2)/32)]][1].find('TRIG') != -1): 
+					#Example of calling a scripted function
+					#if(ourScript.defs[ourScript.data[((ourPiece.pos[1]+66)/32)][((ourPiece.pos[0]+2)/32)]][1].endswith('P')):
+					getattr(sys.modules[__name__], ourScript.defs[ourScript.data[((ourPiece.pos[1]+66)/32)][((ourPiece.pos[0]+2)/32)]][1])()
+					map_renderer = MapRenderer(ourMap)
+					map_renderer.prepare_layers()
+						
 
-		if ourPiece.direction == 1:
-			if (ourScript.defs[ourScript.data[((ourPiece.pos[1]+36)/32)][((ourPiece.pos[0]-4)/32)]][1].find('TRIG') != -1):
-				#Example of calling a scripted function
-				#if(ourScript.defs[ourScript.data[((ourPiece.pos[1]+36)/32)][((ourPiece.pos[0]-4)/32)]][1].endswith('P')):
-				getattr(sys.modules[__name__], ourScript.defs[ourScript.data[((ourPiece.pos[1]+36)/32)][((ourPiece.pos[0]-4)/32)]][1])() 
-				map_renderer = MapRenderer(ourMap)
-				map_renderer.prepare_layers()
+				elif (ourScript.defs[ourScript.data[((ourPiece.pos[1]+66)/32)][((ourPiece.pos[0]+31)/32)]][1].find('TRIG') != -1):
+					#Example of calling a scripted function
+					#if(ourScript.defs[ourScript.data[((ourPiece.pos[1]+66)/32)][((ourPiece.pos[0]+31)/32)]][1].endswith('P')):
+					getattr(sys.modules[__name__], ourScript.defs[ourScript.data[((ourPiece.pos[1]+66)/32)][((ourPiece.pos[0]+31)/32)]][1])()
+					map_renderer = MapRenderer(ourMap)
+					map_renderer.prepare_layers()
+						
 
+			if ourPiece.direction == 3:
+				if (ourScript.defs[ourScript.data[((ourPiece.pos[1]+31)/32)][((ourPiece.pos[0]+34)/32)]][1].find('TRIG') != -1):
+					#Example of calling a scripted function that affects Player (script item ends with P)
+					#if(ourScript.defs[ourScript.data[((ourPiece.pos[1]+31)/32)][((ourPiece.pos[0]+34)/32)]][1].endswith('P')):
+					getattr(sys.modules[__name__], ourScript.defs[ourScript.data[((ourPiece.pos[1]+31)/32)][((ourPiece.pos[0]+34)/32)]][1])()
+					map_renderer = MapRenderer(ourMap)
+					map_renderer.prepare_layers()
+						
 
-			elif (ourScript.defs[ourScript.data[((ourPiece.pos[1]+60)/32)][((ourPiece.pos[0]-4)/32)]][1].find('TRIG') != -1):
-				#Example of calling a scripted function
-				#if(ourScript.defs[ourScript.data[((ourPiece.pos[1]+60)/32)][((ourPiece.pos[0]-4)/32)]][1].endswith('P')):
-				getattr(sys.modules[__name__], ourScript.defs[ourScript.data[((ourPiece.pos[1]+60)/32)][((ourPiece.pos[0]-4)/32)]][1])()
-				map_renderer = MapRenderer(ourMap)
-				map_renderer.prepare_layers()
-					
-				
-		if ourPiece.direction == 2:
-			if (ourScript.defs[ourScript.data[((ourPiece.pos[1]+66)/32)][((ourPiece.pos[0]+2)/32)]][1].find('TRIG') != -1): 
-				#Example of calling a scripted function
-				#if(ourScript.defs[ourScript.data[((ourPiece.pos[1]+66)/32)][((ourPiece.pos[0]+2)/32)]][1].endswith('P')):
-				getattr(sys.modules[__name__], ourScript.defs[ourScript.data[((ourPiece.pos[1]+66)/32)][((ourPiece.pos[0]+2)/32)]][1])()
-				map_renderer = MapRenderer(ourMap)
-				map_renderer.prepare_layers()
-					
-
-			elif (ourScript.defs[ourScript.data[((ourPiece.pos[1]+66)/32)][((ourPiece.pos[0]+31)/32)]][1].find('TRIG') != -1):
-				#Example of calling a scripted function
-				#if(ourScript.defs[ourScript.data[((ourPiece.pos[1]+66)/32)][((ourPiece.pos[0]+31)/32)]][1].endswith('P')):
-				getattr(sys.modules[__name__], ourScript.defs[ourScript.data[((ourPiece.pos[1]+66)/32)][((ourPiece.pos[0]+31)/32)]][1])()
-				map_renderer = MapRenderer(ourMap)
-				map_renderer.prepare_layers()
-					
-
-		if ourPiece.direction == 3:
-			if (ourScript.defs[ourScript.data[((ourPiece.pos[1]+31)/32)][((ourPiece.pos[0]+34)/32)]][1].find('TRIG') != -1):
-				#Example of calling a scripted function that affects Player (script item ends with P)
-				#if(ourScript.defs[ourScript.data[((ourPiece.pos[1]+31)/32)][((ourPiece.pos[0]+34)/32)]][1].endswith('P')):
-				getattr(sys.modules[__name__], ourScript.defs[ourScript.data[((ourPiece.pos[1]+31)/32)][((ourPiece.pos[0]+34)/32)]][1])()
-				map_renderer = MapRenderer(ourMap)
-				map_renderer.prepare_layers()
-					
-
-			elif (ourScript.defs[ourScript.data[((ourPiece.pos[1]+60)/32)][((ourPiece.pos[0]+34)/32)]][1].find('TRIG') != -1):
-				#Example of calling a scripted function that affects Player (script item ends with P)
-				#if(ourScript.defs[ourScript.data[((ourPiece.pos[1]+60)/32)][((ourPiece.pos[0]+34)/32)]][1].endswith('P')):
-				getattr(sys.modules[__name__], ourScript.defs[ourScript.data[((ourPiece.pos[1]+60)/32)][((ourPiece.pos[0]+34)/32)]][1])()
-				map_renderer = MapRenderer(ourMap)
-				map_renderer.prepare_layers()
+				elif (ourScript.defs[ourScript.data[((ourPiece.pos[1]+60)/32)][((ourPiece.pos[0]+34)/32)]][1].find('TRIG') != -1):
+					#Example of calling a scripted function that affects Player (script item ends with P)
+					#if(ourScript.defs[ourScript.data[((ourPiece.pos[1]+60)/32)][((ourPiece.pos[0]+34)/32)]][1].endswith('P')):
+					getattr(sys.modules[__name__], ourScript.defs[ourScript.data[((ourPiece.pos[1]+60)/32)][((ourPiece.pos[0]+34)/32)]][1])()
+					map_renderer = MapRenderer(ourMap)
+					map_renderer.prepare_layers()
 
 
-	# Call functions for scripted tiles player walks on - determined by points near 'feet' of sprite
-	# Precedence goes from left of screen to right, so piece technically can't have two effects happening at once
-	# This means, be mindful of this effect when placing walk-on "scripted" tiles adjacent to each other horizontally
-	if ourScript.data[((ourPiece.pos[1]+56)/32)][((ourPiece.pos[0]+6)/32)] > 1:
-	# Scripted item affects player 
-		if "DOOR" not in (ourScript.defs[ourScript.data[((ourPiece.pos[1]+56)/32)][((ourPiece.pos[0]+6)/32)]][1]):
-			getattr(sys.modules[__name__], ourScript.defs[ourScript.data[((ourPiece.pos[1]+56)/32)][((ourPiece.pos[0]+6)/32)]][1])()
-	elif ourScript.data[((ourPiece.pos[1]+56)/32)][((ourPiece.pos[0]+26)/32)] > 1:
-	# Scripted item affects player 
-		if "DOOR" not in (ourScript.defs[ourScript.data[((ourPiece.pos[1]+56)/32)][((ourPiece.pos[0]+26)/32)]][1]):
-			getattr(sys.modules[__name__], ourScript.defs[ourScript.data[((ourPiece.pos[1]+56)/32)][((ourPiece.pos[0]+26)/32)]][1])()
+		# Call functions for scripted tiles player walks on - determined by points near 'feet' of sprite
+		# Precedence goes from left of screen to right, so piece technically can't have two effects happening at once
+		# This means, be mindful of this effect when placing walk-on "scripted" tiles adjacent to each other horizontally
+		if ourScript.data[((ourPiece.pos[1]+56)/32)][((ourPiece.pos[0]+6)/32)] > 1:
+		# Scripted item affects player 
+			if "DOOR" not in (ourScript.defs[ourScript.data[((ourPiece.pos[1]+56)/32)][((ourPiece.pos[0]+6)/32)]][1]):
+				getattr(sys.modules[__name__], ourScript.defs[ourScript.data[((ourPiece.pos[1]+56)/32)][((ourPiece.pos[0]+6)/32)]][1])()
+		elif ourScript.data[((ourPiece.pos[1]+56)/32)][((ourPiece.pos[0]+26)/32)] > 1:
+		# Scripted item affects player 
+			if "DOOR" not in (ourScript.defs[ourScript.data[((ourPiece.pos[1]+56)/32)][((ourPiece.pos[0]+26)/32)]][1]):
+				getattr(sys.modules[__name__], ourScript.defs[ourScript.data[((ourPiece.pos[1]+56)/32)][((ourPiece.pos[0]+26)/32)]][1])()
 
 	#Scrolling map logic
 	offs_x = ourPiece.pos[0] - 320
@@ -464,6 +458,9 @@ while 1:
 	pHasDrawn = 0
 	
 	for otherEntities in sorted(ourEntities._list, key=lambda entities: entities.pos[1]+64):
+		# remove any blown up from the list
+		if otherEntities.exploded == True:
+			ourEntities.removeEntity(ID = otherEntities.id)
 		#this moving part is just for testing
 		otherEntities.moving = True
 		if (otherEntities.pos[0] > ourPiece.pos[0]):

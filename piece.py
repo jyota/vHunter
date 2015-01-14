@@ -31,8 +31,9 @@ class Piece():
 		self.exploding_image = pygame.image.load("guts.png").convert()
 		self.exploding_image.set_colorkey((0, 0, 0))
 		self.exploding = False
-		self.exploding_seq = range(1, 640, 16)
+		self.exploding_seq = range(1, 640, 4)
 		self.exploding_iterator = -1
+		self.exploded = False
 
 		#Based on 32x64 sprites
 		self.rect = (initpos[0], initpos[1], 32,64)
@@ -42,6 +43,9 @@ class Piece():
 			for i in range(0, (image.get_width()/32)):
 				self._images.append(image.subsurface(Rect((i*32, j*32, 32, 64))).convert())
 				self._images[len(self._images) - 1].set_colorkey((0, 0, 0))
+
+	def __getitem__(self, key):
+		return self.id
 
 	def continue_to_path(self):
 		if self.moving == True:
@@ -59,6 +63,12 @@ class Piece():
 			else: 
 				print "Node switch!\n"
 				self._currNode += 1
+
+	def clear_death(self, hp):
+		self.exploded = False
+		self.exploding = False
+		self.exploding_iterator = -1
+		self.stats.hp = hp
 
 	def update(self, direction, redrawOnly = False):
 		'''Move the object '''
@@ -89,12 +99,20 @@ class Piece():
 			return
 		elif self.exploding == True:
 			# still need to touch this up more
-			surface.blit(self.exploding_image, (self.rect[0] - offsx - self.exploding_seq[self.exploding_iterator], self.rect[1] - offsy, self.rect[2]  - self.exploding_seq[self.exploding_iterator], self.rect[3]))
 			surface.blit(self.exploding_image, (self.rect[0] - offsx - self.exploding_seq[self.exploding_iterator], self.rect[1] - offsy - self.exploding_seq[self.exploding_iterator], self.rect[2], self.rect[3]))
-			surface.blit(self.exploding_image, (self.rect[0] - offsx, self.rect[1] - offsy, self.rect[2]  - self.exploding_seq[self.exploding_iterator], self.rect[3]))
+			surface.blit(self.exploding_image, (self.rect[0] - offsx + self.exploding_seq[self.exploding_iterator], self.rect[1] - offsy - self.exploding_seq[self.exploding_iterator], self.rect[2], self.rect[3]))
+			surface.blit(self.exploding_image, (self.rect[0] - offsx - self.exploding_seq[self.exploding_iterator], self.rect[1] - offsy + self.exploding_seq[self.exploding_iterator], self.rect[2], self.rect[3]))
+			surface.blit(self.exploding_image, (self.rect[0] - offsx + self.exploding_seq[self.exploding_iterator], self.rect[1] - offsy + self.exploding_seq[self.exploding_iterator], self.rect[2], self.rect[3]))
+			surface.blit(self.exploding_image, (self.rect[0] - offsx - self.exploding_seq[self.exploding_iterator], self.rect[1] - offsy, self.rect[2], self.rect[3]))
+			surface.blit(self.exploding_image, (self.rect[0] - offsx + self.exploding_seq[self.exploding_iterator], self.rect[1] - offsy, self.rect[2], self.rect[3]))
 			surface.blit(self.exploding_image, (self.rect[0] - offsx, self.rect[1] - offsy + self.exploding_seq[self.exploding_iterator], self.rect[2], self.rect[3]))
-			if(self.exploding_iterator < len(self.exploding_seq)):
+			surface.blit(self.exploding_image, (self.rect[0] - offsx, self.rect[1] - offsy - self.exploding_seq[self.exploding_iterator], self.rect[2], self.rect[3]))
+
+
+			if(self.exploding_iterator < len(self.exploding_seq) - 1):
 				self.exploding_iterator = self.exploding_iterator + 1
+			else:
+				self.exploded = True
 		else:
 			t = pygame.time.get_ticks()
 			if (t - self._last_update) > self._delay:
