@@ -311,7 +311,7 @@ while 1:
 				for otherPieces in ourEntities._list:
 					if(ourPiece.doesCollide(otherPieces)):
 						ourPiece.pos[1] = ourPiece.pos[1] + ourPiece.speed
-					break
+						break
 
 		if key[pygame.K_LEFT]:
 			ourPiece.moving = True
@@ -325,7 +325,7 @@ while 1:
 				for otherPieces in ourEntities._list:
 					if(ourPiece.doesCollide(otherPieces)):
 						ourPiece.pos[0] = ourPiece.pos[0] + ourPiece.speed
-					break
+						break
 
 		if key[pygame.K_DOWN]:
 			ourPiece.moving = True
@@ -338,7 +338,7 @@ while 1:
 				for otherPieces in ourEntities._list:
 					if(ourPiece.doesCollide(otherPieces)):
 						ourPiece.pos[1] = ourPiece.pos[1] - ourPiece.speed
-					break
+						break
 
 		if key[pygame.K_RIGHT]:
 			ourPiece.moving = True
@@ -351,7 +351,7 @@ while 1:
 				for otherPieces in ourEntities._list:
 					if(ourPiece.doesCollide(otherPieces)):
 						ourPiece.pos[0] = ourPiece.pos[0] - ourPiece.speed
-					break
+						break
 		
 		if key[pygame.K_LSHIFT]: 
 			ourPiece.speed = 3
