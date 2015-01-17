@@ -1,5 +1,7 @@
 Basic 2D scrolling Python game with "map" editor
 
+Author: Jyota Snyder (jyotas at my dot ccsu dot edu)
+
 Sample usage of engine: python engine.py level1.map
 
 Sample usage of editor (existing map): python mapedit.py level1.map
@@ -15,7 +17,4 @@ Requires:
 -example graphics files, maps, etc. the graphics definitely not mine but included for an example.
 
 -eztext.py (eztext included, grabbed from here http://www.pygame.org/project-EzText-920-.html)
-
-
-Author: Jyota Snyder (jyotas at my dot ccsu dot edu)
 
