@@ -1,3 +1,4 @@
+# example of using equipment lists
 import equipment
 from equipment import *
 import eqmlload
