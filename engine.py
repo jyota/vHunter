@@ -44,8 +44,6 @@ import script
 from script import *
 import piece
 from piece import *
-import bfs
-from bfs import *
 import pstats
 from pstats import *
 import sys

@@ -1,7 +1,6 @@
 import pygame
 from pygame import Rect
 from pygame import Surface
-import AStar
 
 class Piece():
 	''' Animated object/ custom sprite stuff.  '''
@@ -17,10 +16,6 @@ class Piece():
 		self.framesperdir = framesperdir
 		self.animoffset = initdir
 		self.frame = 0
-		self._dest = initpos
-		self._path = None
-		self._currNode = 0
-		self._movementPoints = 0
 		self._lastPos = initpos
 		self._lastFacing = initdir
 		self.stats = stats
@@ -46,23 +41,6 @@ class Piece():
 
 	def __getitem__(self, key):
 		return self.id
-
-	def continue_to_path(self):
-		if self.moving == True:
-			if self._currNode > len(self._path.nodes)-1 or self._currNode > self._movementPoints-1: 
-				self.moving = False
-				self._currNode = 0
-			elif (self.pos[0] < self._path.nodes[self._currNode].location.x*32):
-				self.update(3)
-			elif (self.pos[0] > self._path.nodes[self._currNode].location.x*32):
-				self.update(1)
-			elif (self.pos[1]+32 > self._path.nodes[self._currNode].location.y*32):
-				self.update(0)
-			elif (self.pos[1]+32 < self._path.nodes[self._currNode].location.y*32):
-				self.update(2)
-			else: 
-				print "Node switch!\n"
-				self._currNode += 1
 
 	def clear_death(self, hp):
 		self.exploded = False
@@ -130,36 +108,15 @@ class Piece():
 	def set_speed(self, speed):
 		self.speed = speed
 
-	def set_movement_points(self, mp):
-		self._movementPoints = mp
-	
 	def returnToLastPos(self):
 		self.direction = self._lastFacing
 		self.pos[0] = self._lastPos[0] 
 		self.pos[1] = self._lastPos[1]
 		self.rect = (self.pos[0], self.pos[1], 32, 64)
 
-	def moveToTile(self, tilex, tiley, tileColl):
-		self._lastPos = [self.pos[0], self.pos[1]]
-		self._lastFacing = self.direction
-
-		self._dest = [(tilex*32)/32, (tiley*32)/32]
-		if tileColl.data[tiley][tilex] == 1:
-			print "Path not found based on tile map.\n"
-			return
-		astar = AStar.AStar(AStar.SQ_MapHandler(tileColl.data,tileColl.header[1], tileColl.header[2]))
-		self._path = astar.findPath(AStar.SQ_Location(self.pos[0]/32, (self.pos[1]+32)/32), AStar.SQ_Location(self._dest[0], self._dest[1]))
-		if not self._path:
-			print "Path not found.\n"
-			self.moving = False
-		else:
-			print "Path found!\n"
-			self.moving = True
-
 	def doesCollide(self, otherPiece):
 		if self.colrect.colliderect(otherPiece.colrect):
 			return True
 		else: 
 			return False
-
 
