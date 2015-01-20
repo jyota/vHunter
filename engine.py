@@ -49,6 +49,8 @@ from pstats import *
 import sys
 import entities
 from entities import *
+import animated_geom
+from animated_geom import *
 
 # Example of calling scripted function
 def C_TRIG_TELEPORT_P():
@@ -253,6 +255,8 @@ timeTicks = 0
 lastScriptEventTime = 0
 map_renderer = MapRenderer(ourMap)
 map_renderer.prepare_layers()
+# code for testing animated line geometry
+testLine = animated_line([(480, 32), (480, 32), (480, 32), (480, 32)], [(360, 64), (400, 98), (440, 128), (480, 164)], (255, 0, 0), 2, 10, anim_looping = True)
 
 for k in range(ourScript.header[0]):
 	if k != 0:
@@ -489,5 +493,9 @@ while 1:
 		screen = gui.draw_text_block(15, 15, screen, "Current Layer: " + str(currentLayer))
 		screen = gui.draw_text_block(15, 28, screen, "Current Script Item: " + str(ourScript.defs[currentScript][:]))
 		screen = gui.draw_text_block(15, 58, screen, "Current FPS: " + str(clock.get_fps()))
+
+# code for testing animated line geometry
+	testLine.update([offs_x, offs_y])
+	testLine.draw(screen)
 
 	pygame.display.update()

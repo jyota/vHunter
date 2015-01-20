@@ -4,7 +4,7 @@ from pygame import Surface
 
 class Piece():
 	''' Animated object/ custom sprite stuff.  '''
-	def __init__(self, filename, framesperdir, initpos = [0,0],  initdir=None, speed = None, stats = None, id = None, width = 32, height = 64):
+	def __init__(self, filename, framesperdir, initpos = [0,0],  initdir = None, speed = None, stats = None, id = None, width = 32, height = 64):
 		self._images = []
 		self._start = pygame.time.get_ticks()
 		self._delay = 250
