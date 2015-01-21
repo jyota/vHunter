@@ -51,6 +51,8 @@ import entities
 from entities import *
 import animated_geom
 from animated_geom import *
+import meter
+from meter import *
 
 # Example of calling scripted function
 def C_TRIG_TELEPORT_P():
@@ -255,8 +257,9 @@ timeTicks = 0
 lastScriptEventTime = 0
 map_renderer = MapRenderer(ourMap)
 map_renderer.prepare_layers()
+action_meter = meter(0, 100, 50, 30, True)
 # code for testing animated line geometry
-testLine = animated_line([(480, 32), (480, 32), (480, 32), (480, 32)], [(360, 64), (400, 98), (440, 128), (480, 164)], (255, 0, 0), 2, 10, anim_looping = True)
+#testLine = animated_line([(480, 32), (480, 32), (480, 32), (480, 32)], [(360, 64), (400, 98), (440, 128), (480, 164)], (255, 0, 0), 2, 10, anim_looping = True)
 
 for k in range(ourScript.header[0]):
 	if k != 0:
@@ -296,8 +299,10 @@ while 1:
 
 	if key[pygame.K_z]:
 		if(showScriptTiles == True):
+			action_meter.start_replenishing()
 			showScriptTiles = False
 		else:
+			action_meter.stop_replenishing()
 			showScriptTiles = True
 
 	if ourPiece.exploding == False:
@@ -487,15 +492,19 @@ while 1:
 		map_renderer.render_layer(screen, offs_x, offs_y, j)
 
 	ourPiece.moving = False
+
+	# code for testing replenishing 'action meter'
+	action_meter.update()
 	if(showDetails == True):
 		if(showScriptTiles == True):
 			render_script_tiles(screen, ourScript, offs_x, offs_y, scriptTiles)
 		screen = gui.draw_text_block(15, 15, screen, "Current Layer: " + str(currentLayer))
 		screen = gui.draw_text_block(15, 28, screen, "Current Script Item: " + str(ourScript.defs[currentScript][:]))
 		screen = gui.draw_text_block(15, 58, screen, "Current FPS: " + str(clock.get_fps()))
+		screen = gui.draw_text_block(15, 78, screen, "Action Meter: " + str(action_meter.get_current_value()))
 
 # code for testing animated line geometry
-	testLine.update([offs_x, offs_y])
-	testLine.draw(screen)
+	#testLine.update([offs_x, offs_y])
+	#testLine.draw(screen)
 
 	pygame.display.update()
