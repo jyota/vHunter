@@ -276,19 +276,23 @@ for k in range(ourScript.header[0]):
 while 1:
 	clock.tick(60) #keep the framerate at 60 or lower
 	timeTicks = pygame.time.get_ticks()
-	geom_system.update_mode_button() # update counter for how long between button presses for entering/exiting geom system
+	geom_system.update() # update geom system
 	#print clock.get_fps()	
 
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
 			sys.exit()
-
+		if (event.type == pygame.MOUSEMOTION) & (geom_system.is_mode_enabled() == True):
+			geom_system.update_mode_mouse_position(pygame.mouse.get_pos())
+		if (event.type == pygame.MOUSEBUTTONDOWN) & (geom_system.is_mode_enabled() == True):
+			geom_system.press_mouse_click()
+			
 	key=pygame.key.get_pressed()
 	if key[pygame.K_q]: 
 		sys.exit()
 
 	if (key[pygame.K_LCTRL]) & (geom_system.is_mode_button_pressed() == False):
-		geom_system.press_mode_button()
+		geom_system.press_mode_button(ourPiece.pos[0] + 16 - offs_x, ourPiece.pos[1] + 32 - offs_y)
 
 	if geom_system.is_mode_enabled() == False:
 		if key[pygame.K_n] & ourPiece.exploded == True:
@@ -514,5 +518,7 @@ while 1:
 # code for testing animated line geometry
 	#testLine.update([offs_x, offs_y])
 	#testLine.draw(screen)
+	if geom_system.is_mode_enabled() == True:
+		geom_system.draw_system(screen, (255, 0, 0))
 
 	pygame.display.update()
