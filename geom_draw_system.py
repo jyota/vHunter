@@ -1,6 +1,8 @@
 import pygame
 from pygame.draw import *
 import math
+import geom_intersection
+from geom_intersection import *
 
 # framework for geometry drawing system (right now will just be lines with waypoints)
 # i think main engine.py loop will catch the mouse clicks & positions but these will interface with the geom_draw_system to set up the line/geometry drawing & waypoints
@@ -24,6 +26,7 @@ class geom_draw_system():
 		self.curr_distance = 0.0
 		self.ready_to_stop = False
 		self.point_list = [(None, None)]
+		self.hits_calculated = False
 
 	def update(self):
 		if (self.mode_button_pressed == True) & (self.mode_button_counter < self.mode_button_speed):
@@ -93,8 +96,11 @@ class geom_draw_system():
 
 
 	def press_mode_button(self, loc_x, loc_y):
+		if self.hits_calculated == True:
+			self.__init__()
 		self.mode_button_pressed = True
 		if(self.mode_enabled == False):
+			self.point_list = [(None, None)]
 			self.mode_enabled = True
 			self.initial_pos_x = loc_x 
 			self.initial_pos_y = loc_y
@@ -106,9 +112,9 @@ class geom_draw_system():
 		if self.mouse_click_holding == False:
 			self.mouse_click_holding = True
 			self.selected_points = self.selected_points + 1
-			if (self.ready_to_stop == True):
-				# last point selected -- for now just clear mode
-				self.__init__()
+			#if (self.ready_to_stop == True):
+				# last point selected -- do nothing, allow engine to use stored data to check whether enemies collide (for now)
+				# self.__init__() -- was used to clear data
 				
 	def is_mode_enabled(self):
 		return self.mode_enabled
@@ -116,4 +122,15 @@ class geom_draw_system():
 	def draw_system(self, surface, color):
 		if(len(self.point_list) > 1):
 			pygame.draw.lines(surface, color, False, self.point_list, 2)
+
+	def does_collide(self, rect):
+		collision = False
+		i = 1
+		while (i < len(self.point_list)):
+			res = calculateLineIntersectsRectangle(self.point_list[i - 1], self.point_list[i], rect)
+			if len(res) > 0:
+				collision = True
+				break
+			i = i + 1
+		return collision
 

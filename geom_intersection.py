@@ -164,7 +164,7 @@ def calculateLineIntersectsRectangle(p1, p2, rectangle):
 
 
 # some lingering test cases that will eventually be removed
-# qrect = Rect(25, 25, 25, 25)
-# calcres = calculateLineIntersectsRectangle((30, 18), (32, 44), qrect)
-# print calcres, len(calcres)
+#qrect = Rect(25, 25, 25, 25)
+#calcres = calculateLineIntersectsRectangle((52, 27), (12, 28), qrect)
+#print calcres, len(calcres)
 

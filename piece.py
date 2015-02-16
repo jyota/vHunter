@@ -23,6 +23,8 @@ class Piece():
 		self.width = width
 		self.height = height		
 		self.colrect = pygame.Rect(initpos[0]+2, initpos[1]+36, 30,28)
+		# fullrect is for checking full body collision to geometry system
+		self.fullrect = pygame.Rect(initpos[0], initpos[1], 32, 64)
 		self.exploding_image = pygame.image.load("guts.png").convert()
 		self.exploding_image.set_colorkey((0, 0, 0))
 		self.exploding = False
@@ -70,9 +72,11 @@ class Piece():
 
 		#Based on 32x64 sprites
 		self.rect = (self.pos[0], self.pos[1], 32, 64)
-		self.colrect = pygame.Rect(self.pos[0]+8, self.pos[1]+36, 18,26)
+		self.colrect = pygame.Rect(self.pos[0]+8, self.pos[1]+36, 18, 26)
 
 	def draw(self, surface, offsx, offsy):
+		self.fullrect = pygame.Rect(self.pos[0] - offsx, self.pos[1] - offsy, 32, 64)
+		
 		if (self.rect[0]+32 - offsx < 0) or (self.rect[1]+64 - offsy < 0) or (self.rect[0] - offsx > 672) or (self.rect[1] - offsy > 480):
 			return
 		elif self.exploding == True:

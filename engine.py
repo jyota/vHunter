@@ -295,13 +295,18 @@ while 1:
 		geom_system.press_mode_button(ourPiece.pos[0] + 16 - offs_x, ourPiece.pos[1] + 32 - offs_y)
 
 	if geom_system.is_mode_enabled() == False:
+		if geom_system.hits_calculated == False:
+			if len(ourEntities._list) > 0:
+				for piece in ourEntities._list:
+					if (geom_system.does_collide(piece.fullrect) == True):
+						piece.exploding = True
+			geom_system.hits_calculated = True
+
 		if key[pygame.K_n] & ourPiece.exploded == True:
 			ourPiece.clear_death(hp = 100)
 			ourPiece.pos[0] = 480
 			ourPiece.pos[1] = 32
 			ourPiece.update(direction = 0, redrawOnly = True)
-			for piece in ourEntities._list:
-				piece.exploding = True
 		
 		if key[pygame.K_TAB]:
 			if(showDetails == True):
