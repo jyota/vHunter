@@ -299,7 +299,8 @@ while 1:
 			if len(ourEntities._list) > 0:
 				for piece in ourEntities._list:
 					if (geom_system.does_collide(piece.fullrect) == True):
-						piece.exploding = True
+						piece.explode()
+						#piece.exploding = True
 			geom_system.hits_calculated = True
 
 		if key[pygame.K_n] & ourPiece.exploded == True:

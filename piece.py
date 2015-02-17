@@ -119,8 +119,14 @@ class Piece():
 		self.rect = (self.pos[0], self.pos[1], 32, 64)
 
 	def doesCollide(self, otherPiece):
-		if self.colrect.colliderect(otherPiece.colrect):
-			return True
-		else: 
+		if otherPiece.exploding == False:
+			if self.colrect.colliderect(otherPiece.colrect):
+				return True
+			else: 
+				return False
+		else:
 			return False
+
+	def explode(self):
+		self.exploding = True
 
