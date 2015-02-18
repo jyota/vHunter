@@ -22,11 +22,11 @@ class geom_draw_system():
 		self.initial_pos_x = None
 		self.initial_pos_y = None
 		self.selected_points = 0
-		self.available_distance = 300.0
 		self.curr_distance = 0.0
 		self.ready_to_stop = False
 		self.point_list = [(None, None)]
-		self.hits_calculated = False
+		self.hits_calculated = None
+		self.available_distance = None
 
 	def update(self):
 		if (self.mode_button_pressed == True) & (self.mode_button_counter < self.mode_button_speed):
@@ -57,6 +57,14 @@ class geom_draw_system():
 
 	def is_mode_button_pressed(self):
 		return self.mode_button_pressed
+
+
+	def calculate_distanced_used(self):
+		runningDist = 0.0
+		for i in range(1, len(self.point_list)):
+			runningDist = runningDist + math.sqrt((float(self.point_list[i - 1][0]) - float(self.point_list[i][0]))**2 + (float(self.point_list[i - 1][1]) - float(self.point_list[i][1]))**2)
+		print runningDist
+		return runningDist
 
 	def update_distance_used(self):
 		runningDist = 0.0
@@ -95,9 +103,10 @@ class geom_draw_system():
 		return (adjustedX, adjustedY)
 
 
-	def press_mode_button(self, loc_x, loc_y):
+	def press_mode_button(self, loc_x, loc_y, available_distance):
 		if self.hits_calculated == True:
 			self.__init__()
+			self.hits_calculed = None
 		self.mode_button_pressed = True
 		if(self.mode_enabled == False):
 			self.point_list = [(None, None)]
@@ -105,6 +114,8 @@ class geom_draw_system():
 			self.initial_pos_x = loc_x 
 			self.initial_pos_y = loc_y
 			self.point_list = [(loc_x, loc_y)]
+			self.available_distance = available_distance
+			self.hits_calculated = False
 		else:
 			self.mode_enabled = False
 

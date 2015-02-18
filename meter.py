@@ -17,7 +17,7 @@ class meter():
 		self.updating = False
 
 	def update(self):
-		if (self.updating == True) & (self.current_value < self.maximum_value) & (self.current_value > self.minimum_value):
+		if (self.updating == True) & (self.current_value < self.maximum_value) & (self.current_value >= self.minimum_value):
 			if (self.update_speed > 0) & (self.update_ticker < self.update_speed):
 				self.update_ticker = self.update_ticker + 1
 			elif (self.update_speed > 0) & (self.update_ticker >= self.update_speed):

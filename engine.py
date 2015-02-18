@@ -259,7 +259,7 @@ timeTicks = 0
 lastScriptEventTime = 0
 map_renderer = MapRenderer(ourMap)
 map_renderer.prepare_layers()
-action_meter = meter(0, 100, 50, 30, True)
+action_meter = meter(0, 300, 300, 5, True)
 geom_system = geom_draw_system()
 # code for testing animated line geometry
 #testLine = animated_line([(480, 32), (480, 32), (480, 32), (480, 32)], [(360, 64), (400, 98), (440, 128), (480, 164)], (255, 0, 0), 2, 10, anim_looping = True)
@@ -292,12 +292,14 @@ while 1:
 		sys.exit()
 
 	if (key[pygame.K_LCTRL]) & (geom_system.is_mode_button_pressed() == False):
-		geom_system.press_mode_button(ourPiece.pos[0] + 16 - offs_x, ourPiece.pos[1] + 32 - offs_y)
+		geom_system.press_mode_button(ourPiece.pos[0] + 16 - offs_x, ourPiece.pos[1] + 32 - offs_y, action_meter.get_value())
 
 	if (key[pygame.K_LALT]) & (geom_system.is_mode_enabled() == True):
 		geom_system.__init__()
 
 	if geom_system.is_mode_enabled() == False:
+		# replenish action meter as long as geom mode isn't happening
+		action_meter.update()
 		if geom_system.hits_calculated == False:
 			if len(ourEntities._list) > 0:
 				for piece in ourEntities._list:
@@ -305,6 +307,7 @@ while 1:
 						piece.explode()
 						#piece.exploding = True
 			geom_system.hits_calculated = True
+			action_meter.set_value(action_meter.get_value() - geom_system.calculate_distanced_used())
 
 		if key[pygame.K_n] & ourPiece.exploded == True:
 			ourPiece.clear_death(hp = 100)
@@ -513,9 +516,7 @@ while 1:
 		map_renderer.render_layer(screen, offs_x, offs_y, j)
 
 	ourPiece.moving = False
-
-	# code for testing replenishing 'action meter'
-	action_meter.update()
+	
 	if(showDetails == True):
 		if(showScriptTiles == True):
 			render_script_tiles(screen, ourScript, offs_x, offs_y, scriptTiles)
