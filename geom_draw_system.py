@@ -58,12 +58,10 @@ class geom_draw_system():
 	def is_mode_button_pressed(self):
 		return self.mode_button_pressed
 
-
 	def calculate_distanced_used(self):
 		runningDist = 0.0
 		for i in range(1, len(self.point_list)):
 			runningDist = runningDist + math.sqrt((float(self.point_list[i - 1][0]) - float(self.point_list[i][0]))**2 + (float(self.point_list[i - 1][1]) - float(self.point_list[i][1]))**2)
-		print runningDist
 		return runningDist
 
 	def update_distance_used(self):
@@ -71,7 +69,7 @@ class geom_draw_system():
 		currSlope = 0
 		for i in range(1, len(self.point_list)):
 			runningDist = runningDist + math.sqrt((float(self.point_list[i - 1][0]) - float(self.point_list[i][0]))**2 + (float(self.point_list[i - 1][1]) - float(self.point_list[i][1]))**2)
-			if (runningDist > self.available_distance):
+			if (runningDist > self.available_distance) & (len(self.point_list) > 2):
 				remainingDist = self.available_distance - self.curr_distance
 				if (self.point_list[i][0] - self.point_list[i - 1][0]) != 0:
 					currSlope = (float(self.point_list[i][1]) - float(self.point_list[i - 1][1])) / (float(self.point_list[i][0]) - float(self.point_list[i - 1][0]))
@@ -94,6 +92,29 @@ class geom_draw_system():
 
 				self.ready_to_stop = True
 				break
+			if (runningDist > self.available_distance) & (len(self.point_list) == 2):
+				remainingDist = self.available_distance
+				if (self.point_list[i][0] - self.point_list[i - 1][0]) != 0:
+					currSlope = (float(self.point_list[i][1]) - float(self.point_list[i - 1][1])) / (float(self.point_list[i][0]) - float(self.point_list[i - 1][0]))
+				else:
+					currSlope = 0.0
+
+				# adjust direction to maximum distance remaining out of the available
+				if(self.point_list[i - 1][0] < self.point_list[i][0]):
+					adjustedX = self.point_list[i - 1][0] + (remainingDist / math.sqrt(1 + currSlope**2))
+					adjustedY = currSlope * (adjustedX - self.point_list[i - 1][0]) + self.point_list[i - 1][1]
+				elif(self.point_list[i - 1][0] > self.point_list[i][0]):
+					adjustedX = self.point_list[i - 1][0] - (remainingDist / math.sqrt(1 + currSlope**2))
+					adjustedY = currSlope * (adjustedX - self.point_list[i - 1][0]) + self.point_list[i - 1][1]
+				elif (self.point_list[i - 1][1] < self.point_list[i][1]):
+					adjustedX = self.point_list[i - 1][0] 
+					adjustedY = remainingDist + self.point_list[i - 1][1]
+				else:
+					adjustedX = self.point_list[i - 1][0] 
+					adjustedY = -remainingDist + self.point_list[i - 1][1]
+
+				self.ready_to_stop = True
+				break			
 			else:
 				self.curr_distance = runningDist
 				adjustedX = None

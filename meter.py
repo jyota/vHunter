@@ -29,6 +29,11 @@ class meter():
 
 	def set_value(self, new_value):
 		self.current_value = new_value
+		# don't allow value below minimum or above maximum
+		if self.current_value > self.maximum_value:
+			self.current_value = self.maximum_value
+		if self.current_value < self.minimum_value:
+			self.current_value = self.minimum_value
 
 	def add(self, amount):
 		self.current_value = self.current_value + amount
