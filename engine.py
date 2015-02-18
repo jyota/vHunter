@@ -294,6 +294,9 @@ while 1:
 	if (key[pygame.K_LCTRL]) & (geom_system.is_mode_button_pressed() == False):
 		geom_system.press_mode_button(ourPiece.pos[0] + 16 - offs_x, ourPiece.pos[1] + 32 - offs_y)
 
+	if (key[pygame.K_LALT]) & (geom_system.is_mode_enabled() == True):
+		geom_system.__init__()
+
 	if geom_system.is_mode_enabled() == False:
 		if geom_system.hits_calculated == False:
 			if len(ourEntities._list) > 0:
