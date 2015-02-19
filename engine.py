@@ -259,7 +259,7 @@ timeTicks = 0
 lastScriptEventTime = 0
 map_renderer = MapRenderer(ourMap)
 map_renderer.prepare_layers()
-action_meter = meter(0, 300, 300, 5, True)
+action_meter = meter(0, 300, 300, 1, True)
 geom_system = geom_draw_system()
 # code for testing animated line geometry
 #testLine = animated_line([(480, 32), (480, 32), (480, 32), (480, 32)], [(360, 64), (400, 98), (440, 128), (480, 164)], (255, 0, 0), 2, 10, anim_looping = True)
@@ -530,5 +530,7 @@ while 1:
 	#testLine.draw(screen)
 	if geom_system.is_mode_enabled() == True:
 		geom_system.draw_system(screen, (255, 0, 0))
+
+	action_meter.render_bar(screen)
 
 	pygame.display.update()
