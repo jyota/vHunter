@@ -12,13 +12,13 @@ class node(object):
         self.fscore = fscore # h score(estimated cost)
         self.closed = False  # on closed list? y/n
 
-def getdircost(loc1,loc2):    
-    if loc1[0] - loc2[0] != 0 and loc1[1] - loc2[1] != 0:
-        return 16 # diagnal movement
+def getdircost(loc1, loc2, diag_score = 16):    
+    if (loc1[0] != loc2[0]) & (loc1[1] != loc2[1]):
+        return diag_score # diagonal movement
     else:
         return 10 # horizontal/vertical movement
 
-def get_h_score(start,end):
+def get_h_score(start, end):
     """Gets the estimated length of the path from a node
     using the Manhattan Method."""
     #uses a heuristic function
@@ -28,7 +28,6 @@ def get_h_score(start,end):
 def create_path(s, end, grid):
     "Creates the shortest path between s (start) and end."
 
-    # yay nested list comprehension
     # the ons list is a 2d list of node status
     # None means the node has not been checked yet
     # a node object for a value means it is on the open list
@@ -38,13 +37,9 @@ def create_path(s, end, grid):
     #n is the current best node on the open list, starting with the initial node
     n = node(s[0], s[1], None, 0, 0)
 
-    #we store the fscores of the nodes and the nodes themselves in a binary heap
-    
-    #we don't want a binary heap here because it seems to be less consistent (don't know why exactly)
-    #than a simple list.
     openl = []
     
-    geth = get_h_score#who likes writing long things anyways!
+    geth = get_h_score
     while (n.x, n.y) != end:
 
         #search adjacent nodes
@@ -54,22 +49,31 @@ def create_path(s, end, grid):
         #previous path from previous parent
         #if the node is not on the open list and is not a wall,
         #add it to the open list
-        for x in xrange(n.x -1, n.x +2):
-            for y in xrange(n.y -1 , n.y + 2):
+
+	# heavily penalize diagonals if not in an 'open field' so pieces don't get caught on corners with diagonal movement
+	# side effect of this implementation now is pieces tend to avoid walls (seems fine to me)
+	diag_ok = True
+        for x in xrange(n.x - 1, n.x + 2):
+            for y in xrange(n.y - 1 , n.y + 2):
+		if grid[x][y] == False:
+			diag_ok = False
+
+        for x in xrange(n.x - 1, n.x + 2):
+            for y in xrange(n.y - 1 , n.y + 2):
                 #the checked node can't be our central node
-                if (x,y) != (n.x,n.y):
-                        
+                if (x, y) != (n.x, n.y):
                     #if the node is not on the closed list or open list
                     if ons[x][y] != None:
                         if ons[x][y].closed == False:
                             #get cost of the new path made from switching parents
-                            new_cost = getdircost((n.x,n.y),(x,y)) + n.gscore
+			    if diag_ok == False:
+                            	new_cost = getdircost((n.x, n.y), (x, y), 1000) + n.gscore # diagonal not OK
+			    else:
+				new_cost = getdircost((n.x, n.y), (x, y)) + n.gscore # diagonal OK
 
                             # if the path from the current node is shorter
                             if new_cost <= ons[x][y].gscore:
-                                
-                                newf = new_cost + geth((x,y),end)
-
+                                newf = new_cost + geth((x,y), end)
                                 
                                 #find the index of the node
                                 #to change in the open list
@@ -88,28 +92,25 @@ def create_path(s, end, grid):
                     #if the node is not a wall and not on the closed list
                     #then simply add it to the open list
                     elif grid[x][y] == True:
+			    h = geth((x, y), end)
 
-                            
-                            h = geth((x,y),end)
-                            
-                            #movement score gets the direction cost
+			    #movement score gets the direction cost
                             #added to the parent's directional cost
-                            g = getdircost((n.x,n.y),(x,y)) + n.gscore
-
-                            ons[x][y] = node(x, y, n, g, g+h)#turn it on baby
-
-                            openl.append([g+h,ons[x][y]])
+			    if diag_ok == False:
+                            	g = getdircost((n.x, n.y), (x, y), 1000) + n.gscore # don't allow a diagonal
+			    else:
+				g = getdircost((n.x, n.y), (x, y)) + n.gscore # allow a diagonal
+                            
+                            ons[x][y] = node(x, y, n, g, g + h)
+                            openl.append([g + h, ons[x][y]])
                             
         #if the length of the open list is zero(all nodes on closed list)
         #then return an empty path list
         if len(openl) == 0: n = None; break
 
-        ##############
-        
         n = min(openl)
         openl.remove(n)
         n = n[1]
-        ##############
         
         #remove from the 'closed' list
         ons[n.x][n.y].closed = True

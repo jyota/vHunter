@@ -1,27 +1,3 @@
-# main game concept:
-# you are a defender of the undead and monsters for a property
-# during the day you set up bombs and other defenses (perhaps with a time limit)
-# once time is up or set up is finished, night comes and the
-# monster hordes come lurking -- will your defenses protect the family you
-# have been hired to protect?
-# note: this will take some re-thinking of the engine, currently it's like
-# an RPG, moving character with the keyboard. the updated game could easily just
-# be something like:
-# 1) level intro screen/view level
-# 2) purchase items to protect family under a certain budget
-# 3) place items for defense
-# 4) monsters try to kill the family you were hired to set up defense for
-# for each dead monster could be some reward, and potential multiple rounds at a stage to survive
-# this requires no player piece to move around, just placement of items.
-# family can be on board, but probably just stationary and huddled up in home.
-# perhaps they will try to run away if the monsters get close enough or something.
-
-# since partly implemented already, could flesh out the "place items for defense"
-# piece first...?
-# also, as a prototype, could just do the steps 3 & 4 & assess--
-# would start with a 'default' pack of items for the defense for the prototype
-
-import operator as op
 import astar
 import pygame
 import gui
@@ -224,7 +200,7 @@ clock = pygame.time.Clock()
 screen = pygame.display.set_mode((640, 480), (DOUBLEBUF))
 pygame.display.update()
 pygame.mouse.set_visible(True)
-ourPiece = Piece("testchr.png", 3, [480, 32], 2, 2, PStats(hp = 100), 'PLAYER', 32, 64)
+ourPiece = Piece("testchr.png", 3, [488, 150], 2, 2, PStats(hp = 100), 'PLAYER', 32, 64)
 ourEntities = entities()
 ourEntities.addEntity(Piece("baddie.png", 3, [320,200], 2, 1, PStats(), 'BADDIE', 32, 64))
 ourEntities.addEntity(Piece("baddie.png", 3, [360,260], 2, 1, PStats(), 'BADDIE2', 32, 64))
@@ -482,7 +458,7 @@ while 1:
 
 	if test_astar_path == None:
 		# just testing pathfinding with A*
-		test_astar_path = astar.create_path((int(round(ourEntities._list[0].pos[0] / 32.0, 0)), int(round(ourEntities._list[0].pos[1] / 32.0, 0))), (22, 9), astar.script_to_grid(ourScript))
+		test_astar_path = astar.create_path((int(round(ourPiece.colrect.left / 32.0, 0)), int(round(ourPiece.colrect.top / 32.0, 0))), (22, 9), astar.script_to_grid(ourScript))
 		for i in range(len(test_astar_path)):
 			usethis_x = offs_x
 			usethis_y = offs_y
@@ -491,6 +467,8 @@ while 1:
 			if (offs_y < 0):
 				usethis_y = 0
 			test_astar_path[i] = (test_astar_path[i][0] * 32 - usethis_x + 16, test_astar_path[i][1] * 32 - usethis_y + 16)
+
+
 
 	if(offs_x < 0): offs_x = 0
 	if(offs_y < 0): offs_y = 0
