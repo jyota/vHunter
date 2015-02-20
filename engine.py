@@ -21,6 +21,8 @@
 # also, as a prototype, could just do the steps 3 & 4 & assess--
 # would start with a 'default' pack of items for the defense for the prototype
 
+import operator as op
+import astar
 import pygame
 import gui
 from gui import *
@@ -273,10 +275,12 @@ for k in range(ourScript.header[0]):
 		print ourScript.defs[k][1]
 		scriptTiles.append(currTile)
 
+test_astar_path = None
+
 while 1:
 	clock.tick(60) #keep the framerate at 60 or lower
 	timeTicks = pygame.time.get_ticks()
-	geom_system.update() # update geom system
+	geom_system.update() # update geom systemtest_astar_path
 	#print clock.get_fps()	
 
 	for event in pygame.event.get():
@@ -475,6 +479,19 @@ while 1:
 	#Scrolling map logic
 	offs_x = ourPiece.pos[0] - 320
 	offs_y = ourPiece.pos[1] - 240
+
+	if test_astar_path == None:
+		# just testing pathfinding with A*
+		test_astar_path = astar.create_path((int(round(ourEntities._list[0].pos[0] / 32.0, 0)), int(round(ourEntities._list[0].pos[1] / 32.0, 0))), (22, 9), astar.script_to_grid(ourScript))
+		for i in range(len(test_astar_path)):
+			usethis_x = offs_x
+			usethis_y = offs_y
+			if (offs_x < 0): 
+				usethis_x = 0
+			if (offs_y < 0):
+				usethis_y = 0
+			test_astar_path[i] = (test_astar_path[i][0] * 32 - usethis_x + 16, test_astar_path[i][1] * 32 - usethis_y + 16)
+
 	if(offs_x < 0): offs_x = 0
 	if(offs_y < 0): offs_y = 0
 	#print ourMap.header[3]*32
@@ -531,6 +548,7 @@ while 1:
 	if geom_system.is_mode_enabled() == True:
 		geom_system.draw_system(screen, (255, 0, 0))
 
+	pygame.draw.lines(screen, (0, 0, 255), False, test_astar_path, 2)
 	action_meter.render_bar(screen)
-
+	
 	pygame.display.update()
