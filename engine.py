@@ -33,6 +33,8 @@ import meter
 from meter import *
 import geom_draw_system
 from geom_draw_system import *
+import npc
+from npc import *
 
 # Example of calling scripted function
 def C_TRIG_TELEPORT_P():
@@ -202,11 +204,11 @@ pygame.display.update()
 pygame.mouse.set_visible(True)
 ourPiece = Piece("testchr.png", 3, [488, 150], 2, 2, PStats(hp = 100), 'PLAYER', 32, 64)
 ourEntities = entities()
-ourEntities.addEntity(Piece("baddie.png", 3, [320,200], 2, 1, PStats(), 'BADDIE', 32, 64))
-ourEntities.addEntity(Piece("baddie.png", 3, [360,260], 2, 1, PStats(), 'BADDIE2', 32, 64))
-ourEntities.addEntity(Piece("eilf2b.png", 3, [360,320], 2, 1, PStats(), 'BADDIE3', 32, 64))
-ourEntities.addEntity(Piece("baddie.png", 3, [352,200], 2, 1, PStats(), 'BADDIE4', 32, 64))
-ourEntities.addEntity(Piece("baddie.png", 3, [352,232], 2, 1, PStats(), 'BADDIE5', 32, 64))
+ourEntities.addEntity(npcPiece("baddie.png", 3, [320,200], 2, 1, PStats(), 'BADDIE', 32, 64, ai_state = "stationary"))
+ourEntities.addEntity(npcPiece("baddie.png", 3, [360,260], 2, 1, PStats(), 'BADDIE2', 32, 64, ai_state = "stationary"))
+ourEntities.addEntity(npcPiece("eilf2b.png", 3, [360,320], 2, 1, PStats(), 'BADDIE3', 32, 64, ai_state = "stationary"))
+ourEntities.addEntity(npcPiece("baddie.png", 3, [352,200], 2, 1, PStats(), 'BADDIE4', 32, 64, ai_state = "stationary"))
+ourEntities.addEntity(npcPiece("baddie.png", 3, [352,232], 2, 1, PStats(), 'BADDIE5', 32, 64, ai_state = "stationary"))
 
 #command line arguments
 if(len(sys.argv)>0):
@@ -273,6 +275,7 @@ while 1:
 
 	if (key[pygame.K_LCTRL]) & (geom_system.is_mode_button_pressed() == False):
 		geom_system.press_mode_button(ourPiece.pos[0] + 16 - offs_x, ourPiece.pos[1] + 32 - offs_y, action_meter.get_value())
+		geom_system.update_mode_mouse_position(pygame.mouse.get_pos())
 
 	if (key[pygame.K_LALT]) & (geom_system.is_mode_enabled() == True):
 		geom_system.__init__()
@@ -458,7 +461,8 @@ while 1:
 
 	if test_astar_path == None:
 		# just testing pathfinding with A*
-		test_astar_path = astar.create_path((int(round(ourPiece.colrect.left / 32.0, 0)), int(round(ourPiece.colrect.top / 32.0, 0))), (22, 9), astar.script_to_grid(ourScript))
+		ourEntities._list[0].calculate_astar_path((22, 9), astar.script_to_grid(ourScript))
+		test_astar_path = ourEntities._list[0].current_astar_path
 		for i in range(len(test_astar_path)):
 			usethis_x = offs_x
 			usethis_y = offs_y
@@ -467,8 +471,6 @@ while 1:
 			if (offs_y < 0):
 				usethis_y = 0
 			test_astar_path[i] = (test_astar_path[i][0] * 32 - usethis_x + 16, test_astar_path[i][1] * 32 - usethis_y + 16)
-
-
 
 	if(offs_x < 0): offs_x = 0
 	if(offs_y < 0): offs_y = 0

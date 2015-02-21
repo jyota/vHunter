@@ -2,7 +2,7 @@ import pygame
 from pygame import Rect
 from pygame import Surface
 
-class Piece():
+class Piece(object):
 	''' Animated object/ custom sprite stuff.  '''
 	def __init__(self, filename, framesperdir, initpos = [0,0],  initdir = None, speed = None, stats = None, id = None, width = 32, height = 64):
 		self._images = []
