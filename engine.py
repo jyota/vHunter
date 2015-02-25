@@ -204,11 +204,11 @@ pygame.display.update()
 pygame.mouse.set_visible(True)
 ourPiece = Piece("testchr.png", 3, [488, 150], 2, 2, PStats(hp = 100), 'PLAYER', 32, 64)
 ourEntities = entities()
-ourEntities.addEntity(npcPiece("baddie.png", 3, [320,200], 2, 1, PStats(), 'BADDIE', 32, 64, ai_state = "stationary"))
-ourEntities.addEntity(npcPiece("baddie.png", 3, [360,260], 2, 1, PStats(), 'BADDIE2', 32, 64, ai_state = "stationary"))
-ourEntities.addEntity(npcPiece("eilf2b.png", 3, [360,320], 2, 1, PStats(), 'BADDIE3', 32, 64, ai_state = "stationary"))
-ourEntities.addEntity(npcPiece("baddie.png", 3, [352,200], 2, 1, PStats(), 'BADDIE4', 32, 64, ai_state = "stationary"))
-ourEntities.addEntity(npcPiece("baddie.png", 3, [352,232], 2, 1, PStats(), 'BADDIE5', 32, 64, ai_state = "stationary"))
+ourEntities.addEntity(npcPiece("baddie.png", 3, [320,200], 2, 1, PStats(hp = 100), 'BADDIE', 32, 64, ai_state = "chase_player"))
+ourEntities.addEntity(npcPiece("baddie.png", 3, [360,260], 2, 1, PStats(hp = 100), 'BADDIE2', 32, 64, ai_state = "chase_player"))
+ourEntities.addEntity(npcPiece("eilf2b.png", 3, [360,320], 2, 1, PStats(hp = 100), 'BADDIE3', 32, 64, ai_state = "chase_player"))
+ourEntities.addEntity(npcPiece("baddie.png", 3, [352,200], 2, 1, PStats(hp = 100), 'BADDIE4', 32, 64, ai_state = "chase_player"))
+ourEntities.addEntity(npcPiece("baddie.png", 3, [352,232], 2, 1, PStats(hp = 100), 'BADDIE5', 32, 64, ai_state = "chase_player"))
 
 #command line arguments
 if(len(sys.argv)>0):
@@ -489,15 +489,12 @@ while 1:
 		# remove any blown up from the list
 		if otherEntities.exploded == True:
 			ourEntities.removeEntity(ID = otherEntities.id)
-		#this moving part is just for testing
 		otherEntities.moving = True
-		if (otherEntities.pos[0] > ourPiece.pos[0]):
-			otherEntities.direction = 1
-			otherEntities.animoffset = 1
-		else:
-			otherEntities.direction = 3
-			otherEntities.animoffset = 3
 
+		# choose facing for piece animation, as well as movement direction
+		otherEntities.choose_facing(ourPiece.pos)				print "BARGAGGLE"
+		# update piece to move towards movement direction
+		otherEntities.update(otherEntities.get_movement_direction())
 		if (otherEntities.pos[1]+64 > ourPiece.pos[1]+64) & (pHasDrawn == 0):
 			ourPiece.draw(screen,offs_x,offs_y)
 			otherEntities.draw(screen, offs_x, offs_y)
