@@ -55,12 +55,12 @@ class npcPiece(piece.Piece):
 			
 			# now set actual movement direction
 			if abs(self.pos[0] - player_pos[0]) > abs(self.pos[1] - player_pos[1]):
-				if (self.pos[0] > player_pos[0]):
+				if (self.pos[0] >= player_pos[0]):
 					self.movement_direction = 1
 				else:
 					self.movement_direction = 3
 			else:
-				if (self.pos[1] > player_pos[1]):
+				if (self.pos[1] >= player_pos[1]):
 					self.movement_direction = 0
 				else:
 					self.movement_direction = 2

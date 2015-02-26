@@ -485,16 +485,137 @@ while 1:
 	# begin entity draw 
 	pHasDrawn = 0
 	
-	for otherEntities in sorted(ourEntities._list, key=lambda entities: entities.pos[1]+64):
+	for otherEntities in sorted(ourEntities._list, key = lambda entities: entities.pos[1]+64):
 		# remove any blown up from the list
 		if otherEntities.exploded == True:
 			ourEntities.removeEntity(ID = otherEntities.id)
 		otherEntities.moving = True
 
 		# choose facing for piece animation, as well as movement direction
-		otherEntities.choose_facing(ourPiece.pos)				print "BARGAGGLE"
-		# update piece to move towards movement direction
-		otherEntities.update(otherEntities.get_movement_direction())
+		otherEntities.choose_facing(ourPiece.pos)
+
+		# next long block handles NPC piece movement based on the current facing, including collisions. still a bit rough but works.
+		# currently tested only with 'chase player,' need to check it out for A* path movement.
+		if otherEntities.get_movement_direction() == 0:			
+			if (ourScript.defs[ourScript.data[((otherEntities.pos[1]+33)/32)][((otherEntities.pos[0]+4)/32)]][1].startswith('C') == False) & (ourScript.defs[ourScript.data[((otherEntities.pos[1]+33)/32)][((otherEntities.pos[0]+28)/32)]][1].startswith('C') == False):
+				otherEntities.update(otherEntities.get_movement_direction())
+				# handle piece collision logic
+				for otherPieces in ourEntities._list:
+					if otherPieces.id != otherEntities.id:
+						if (otherEntities.doesCollide(otherPieces)):
+							if otherPieces.pos[0] > otherEntities.pos[0]:
+								otherEntities.pos[0] = otherEntities.pos[0] - otherEntities.speed 
+							if otherPieces.pos[0] <= otherEntities.pos[0]:
+								otherEntities.pos[0] = otherEntities.pos[0] + otherEntities.speed
+							if otherPieces.pos[1] > otherEntities.pos[1]:
+								otherEntities.pos[1] = otherEntities.pos[1] - otherEntities.speed
+							if otherPieces.pos[1] <= otherEntities.pos[1]:
+								otherEntities.pos[1] = otherEntities.pos[1] + otherEntities.speed
+						if (otherEntities.doesCollide(ourPiece)):
+							if ourPiece.pos[0] > otherEntities.pos[0]:
+								otherEntities.pos[0] = otherEntities.pos[0] - otherEntities.speed 
+							if ourPiece.pos[0] <= otherEntities.pos[0]:
+								otherEntities.pos[0] = otherEntities.pos[0] + otherEntities.speed
+							if ourPiece.pos[1] > otherEntities.pos[1]:
+								otherEntities.pos[1] = otherEntities.pos[1] - otherEntities.speed
+							if ourPiece.pos[1] <= otherEntities.pos[1]:
+								otherEntities.pos[1] = otherEntities.pos[1] + otherEntities.speed
+			if otherEntities.pos[1] < -32:
+				otherEntities.pos[1] = -32
+
+		if otherEntities.get_movement_direction() == 1:
+			if (ourScript.defs[ourScript.data[((otherEntities.pos[1]+36)/32)][((otherEntities.pos[0])/32)]][1].startswith('C') == False) & (ourScript.defs[ourScript.data[((otherEntities.pos[1]+60)/32)][((otherEntities.pos[0])/32)]][1].startswith('C') == False):
+				otherEntities.update(otherEntities.get_movement_direction())		
+				# handle piece collision logic
+				for otherPieces in ourEntities._list:
+					if otherPieces.id != otherEntities.id:
+						if (otherEntities.doesCollide(otherPieces)):
+							if otherPieces.pos[0] > otherEntities.pos[0]:
+								otherEntities.pos[0] = otherEntities.pos[0] - otherEntities.speed 
+							if otherPieces.pos[0] <= otherEntities.pos[0]:
+								otherEntities.pos[0] = otherEntities.pos[0] + otherEntities.speed
+							if otherPieces.pos[1] > otherEntities.pos[1]:
+								otherEntities.pos[1] = otherEntities.pos[1] - otherEntities.speed
+							if otherPieces.pos[1] <= otherEntities.pos[1]:
+								otherEntities.pos[1] = otherEntities.pos[1] + otherEntities.speed
+						if (otherEntities.doesCollide(ourPiece)):
+							if ourPiece.pos[0] > otherEntities.pos[0]:
+								otherEntities.pos[0] = otherEntities.pos[0] - otherEntities.speed 
+							if ourPiece.pos[0] <= otherEntities.pos[0]:
+								otherEntities.pos[0] = otherEntities.pos[0] + otherEntities.speed
+							if ourPiece.pos[1] > otherEntities.pos[1]:
+								otherEntities.pos[1] = otherEntities.pos[1] - otherEntities.speed
+							if ourPiece.pos[1] <= otherEntities.pos[1]:
+								otherEntities.pos[1] = otherEntities.pos[1] + otherEntities.speed
+
+			if otherEntities.pos[0] < 0:
+				otherEntities.pos[0] = 0
+
+		if otherEntities.get_movement_direction() == 2:
+			if (ourScript.defs[ourScript.data[((otherEntities.pos[1]+64)/32)][((otherEntities.pos[0]+4)/32)]][1].startswith('C') == False) & (ourScript.defs[ourScript.data[((otherEntities.pos[1]+64)/32)][((otherEntities.pos[0]+28)/32)]][1].startswith('C') == False):
+				otherEntities.update(otherEntities.get_movement_direction())			
+				# handle piece collision logic
+				for otherPieces in ourEntities._list:
+					if otherPieces.id != otherEntities.id:
+						if (otherEntities.doesCollide(otherPieces)):
+							if otherPieces.pos[0] > otherEntities.pos[0]:
+								otherEntities.pos[0] = otherEntities.pos[0] - otherEntities.speed 
+							if otherPieces.pos[0] <= otherEntities.pos[0]:
+								otherEntities.pos[0] = otherEntities.pos[0] + otherEntities.speed
+							if otherPieces.pos[1] > otherEntities.pos[1]:
+								otherEntities.pos[1] = otherEntities.pos[1] - otherEntities.speed
+							if otherPieces.pos[1] <= otherEntities.pos[1]:
+								otherEntities.pos[1] = otherEntities.pos[1] + otherEntities.speed
+						if (otherEntities.doesCollide(ourPiece)):
+							if ourPiece.pos[0] > otherEntities.pos[0]:
+								otherEntities.pos[0] = otherEntities.pos[0] - otherEntities.speed 
+							if ourPiece.pos[0] <= otherEntities.pos[0]:
+								otherEntities.pos[0] = otherEntities.pos[0] + otherEntities.speed
+							if ourPiece.pos[1] > otherEntities.pos[1]:
+								otherEntities.pos[1] = otherEntities.pos[1] - otherEntities.speed
+							if ourPiece.pos[1] <= otherEntities.pos[1]:
+								otherEntities.pos[1] = otherEntities.pos[1] + otherEntities.speed
+
+			if otherEntities.pos[1]+65 > ourScript.header[2]*32:
+				otherEntities.pos[1] = ourScript.header[2]*32- 65
+
+		if otherEntities.get_movement_direction() == 3:
+			if (ourScript.defs[ourScript.data[((otherEntities.pos[1]+36)/32)][((otherEntities.pos[0]+32)/32)]][1].startswith('C') == False) & (ourScript.defs[ourScript.data[((otherEntities.pos[1]+60)/32)][((otherEntities.pos[0]+32)/32)]][1].startswith('C') == False):
+				otherEntities.update(otherEntities.get_movement_direction())			
+				# handle piece collision logic
+				for otherPieces in ourEntities._list:
+					if otherPieces.id != otherEntities.id:
+						if (otherEntities.doesCollide(otherPieces)):
+							if otherPieces.pos[0] > otherEntities.pos[0]:
+								otherEntities.pos[0] = otherEntities.pos[0] - otherEntities.speed 
+							if otherPieces.pos[0] <= otherEntities.pos[0]:
+								otherEntities.pos[0] = otherEntities.pos[0] + otherEntities.speed
+							if otherPieces.pos[1] > otherEntities.pos[1]:
+								otherEntities.pos[1] = otherEntities.pos[1] - otherEntities.speed
+							if otherPieces.pos[1] <= otherEntities.pos[1]:
+								otherEntities.pos[1] = otherEntities.pos[1] + otherEntities.speed
+						if (otherEntities.doesCollide(ourPiece)):
+							if ourPiece.pos[0] > otherEntities.pos[0]:
+								otherEntities.pos[0] = otherEntities.pos[0] - otherEntities.speed 
+							if ourPiece.pos[0] <= otherEntities.pos[0]:
+								otherEntities.pos[0] = otherEntities.pos[0] + otherEntities.speed
+							if ourPiece.pos[1] > otherEntities.pos[1]:
+								otherEntities.pos[1] = otherEntities.pos[1] - otherEntities.speed
+							if ourPiece.pos[1] <= otherEntities.pos[1]:
+								otherEntities.pos[1] = otherEntities.pos[1] + otherEntities.speed
+
+			if otherEntities.pos[0]+33 > ourScript.header[1]*32:
+				otherEntities.pos[0] = ourScript.header[2]*32 - 33
+
+		if (ourScript.defs[ourScript.data[((otherEntities.pos[1]+33)/32)][((otherEntities.pos[0]+4)/32)]][1].startswith('C') == True) or (ourScript.defs[ourScript.data[((otherEntities.pos[1]+33)/32)][((otherEntities.pos[0]+28)/32)]][1].startswith('C') == True):
+			otherEntities.pos[1] = otherEntities.pos[1] + otherEntities.speed
+		if (ourScript.defs[ourScript.data[((otherEntities.pos[1]+64)/32)][((otherEntities.pos[0]+4)/32)]][1].startswith('C') == True) or (ourScript.defs[ourScript.data[((otherEntities.pos[1]+64)/32)][((otherEntities.pos[0]+28)/32)]][1].startswith('C') == True):
+			otherEntities.pos[1] = otherEntities.pos[1] - otherEntities.speed
+		if (ourScript.defs[ourScript.data[((otherEntities.pos[1]+36)/32)][((otherEntities.pos[0])/32)]][1].startswith('C') == True) or (ourScript.defs[ourScript.data[((otherEntities.pos[1]+60)/32)][((otherEntities.pos[0])/32)]][1].startswith('C') == True):
+			otherEntities.pos[0] = otherEntities.pos[0] + otherEntities.speed
+		if (ourScript.defs[ourScript.data[((otherEntities.pos[1]+36)/32)][((otherEntities.pos[0]+32)/32)]][1].startswith('C') == True) or (ourScript.defs[ourScript.data[((otherEntities.pos[1]+60)/32)][((otherEntities.pos[0]+32)/32)]][1].startswith('C') == True):
+			otherEntities.pos[0] = otherEntities.pos[0] - otherEntities.speed
+
 		if (otherEntities.pos[1]+64 > ourPiece.pos[1]+64) & (pHasDrawn == 0):
 			ourPiece.draw(screen,offs_x,offs_y)
 			otherEntities.draw(screen, offs_x, offs_y)
@@ -525,7 +646,6 @@ while 1:
 	if geom_system.is_mode_enabled() == True:
 		geom_system.draw_system(screen, (255, 0, 0))
 
-	pygame.draw.lines(screen, (0, 0, 255), False, test_astar_path, 2)
 	action_meter.render_bar(screen)
 	
 	pygame.display.update()
