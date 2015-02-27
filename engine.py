@@ -204,11 +204,11 @@ pygame.display.update()
 pygame.mouse.set_visible(True)
 ourPiece = Piece("testchr.png", 3, [488, 150], 2, 2, PStats(hp = 100), 'PLAYER', 32, 64)
 ourEntities = entities()
-ourEntities.addEntity(npcPiece("baddie.png", 3, [320,200], 2, 1, PStats(hp = 100), 'BADDIE', 32, 64, ai_state = "chase_player"))
-ourEntities.addEntity(npcPiece("baddie.png", 3, [360,260], 2, 1, PStats(hp = 100), 'BADDIE2', 32, 64, ai_state = "chase_player"))
-ourEntities.addEntity(npcPiece("eilf2b.png", 3, [360,320], 2, 1, PStats(hp = 100), 'BADDIE3', 32, 64, ai_state = "chase_player"))
-ourEntities.addEntity(npcPiece("baddie.png", 3, [352,200], 2, 1, PStats(hp = 100), 'BADDIE4', 32, 64, ai_state = "chase_player"))
-ourEntities.addEntity(npcPiece("baddie.png", 3, [352,232], 2, 1, PStats(hp = 100), 'BADDIE5', 32, 64, ai_state = "chase_player"))
+ourEntities.addEntity(npcPiece("baddie.png", 3, [352,232], 2, 1, PStats(hp = 100), 'BADDIE5', 32, 64, ai_state = "chase_objective_location"))
+ourEntities.addEntity(npcPiece("baddie.png", 3, [320,200], 2, 1, PStats(hp = 100), 'BADDIE', 32, 64, ai_state = "chase_objective_location"))
+#ourEntities.addEntity(npcPiece("baddie.png", 3, [360,260], 2, 1, PStats(hp = 100), 'BADDIE2', 32, 64, ai_state = "stationary"))
+#ourEntities.addEntity(npcPiece("eilf2b.png", 3, [360,320], 2, 1, PStats(hp = 100), 'BADDIE3', 32, 64, ai_state = "stationary"))
+#ourEntities.addEntity(npcPiece("baddie.png", 3, [352,200], 2, 1, PStats(hp = 100), 'BADDIE4', 32, 64, ai_state = "stationary"))
 
 #command line arguments
 if(len(sys.argv)>0):
@@ -253,7 +253,10 @@ for k in range(ourScript.header[0]):
 		print ourScript.defs[k][1]
 		scriptTiles.append(currTile)
 
-test_astar_path = None
+
+# just testing pathfinding with A*
+ourEntities._list[0].calculate_astar_path((22, 9), astar.script_to_grid(ourScript))
+ourEntities._list[1].calculate_astar_path((20, 8), astar.script_to_grid(ourScript))
 
 while 1:
 	clock.tick(60) #keep the framerate at 60 or lower
@@ -459,19 +462,6 @@ while 1:
 	offs_x = ourPiece.pos[0] - 320
 	offs_y = ourPiece.pos[1] - 240
 
-	if test_astar_path == None:
-		# just testing pathfinding with A*
-		ourEntities._list[0].calculate_astar_path((22, 9), astar.script_to_grid(ourScript))
-		test_astar_path = ourEntities._list[0].current_astar_path
-		for i in range(len(test_astar_path)):
-			usethis_x = offs_x
-			usethis_y = offs_y
-			if (offs_x < 0): 
-				usethis_x = 0
-			if (offs_y < 0):
-				usethis_y = 0
-			test_astar_path[i] = (test_astar_path[i][0] * 32 - usethis_x + 16, test_astar_path[i][1] * 32 - usethis_y + 16)
-
 	if(offs_x < 0): offs_x = 0
 	if(offs_y < 0): offs_y = 0
 	#print ourMap.header[3]*32
@@ -495,7 +485,7 @@ while 1:
 		otherEntities.choose_facing(ourPiece.pos)
 
 		# next long block handles NPC piece movement based on the current facing, including collisions. still a bit rough but works.
-		# currently tested only with 'chase player,' need to check it out for A* path movement.
+		# so far seems to work with A* and 'chase player' modes reasonably OK.
 		if otherEntities.get_movement_direction() == 0:			
 			if (ourScript.defs[ourScript.data[((otherEntities.pos[1]+33)/32)][((otherEntities.pos[0]+4)/32)]][1].startswith('C') == False) & (ourScript.defs[ourScript.data[((otherEntities.pos[1]+33)/32)][((otherEntities.pos[0]+28)/32)]][1].startswith('C') == False):
 				otherEntities.update(otherEntities.get_movement_direction())
@@ -511,15 +501,15 @@ while 1:
 								otherEntities.pos[1] = otherEntities.pos[1] - otherEntities.speed
 							if otherPieces.pos[1] <= otherEntities.pos[1]:
 								otherEntities.pos[1] = otherEntities.pos[1] + otherEntities.speed
-						if (otherEntities.doesCollide(ourPiece)):
-							if ourPiece.pos[0] > otherEntities.pos[0]:
-								otherEntities.pos[0] = otherEntities.pos[0] - otherEntities.speed 
-							if ourPiece.pos[0] <= otherEntities.pos[0]:
-								otherEntities.pos[0] = otherEntities.pos[0] + otherEntities.speed
-							if ourPiece.pos[1] > otherEntities.pos[1]:
-								otherEntities.pos[1] = otherEntities.pos[1] - otherEntities.speed
-							if ourPiece.pos[1] <= otherEntities.pos[1]:
-								otherEntities.pos[1] = otherEntities.pos[1] + otherEntities.speed
+				if (otherEntities.doesCollide(ourPiece)):
+					if ourPiece.pos[0] > otherEntities.pos[0]:
+						otherEntities.pos[0] = otherEntities.pos[0] - otherEntities.speed 
+					if ourPiece.pos[0] <= otherEntities.pos[0]:
+						otherEntities.pos[0] = otherEntities.pos[0] + otherEntities.speed
+					if ourPiece.pos[1] > otherEntities.pos[1]:
+						otherEntities.pos[1] = otherEntities.pos[1] - otherEntities.speed
+					if ourPiece.pos[1] <= otherEntities.pos[1]:
+						otherEntities.pos[1] = otherEntities.pos[1] + otherEntities.speed
 			if otherEntities.pos[1] < -32:
 				otherEntities.pos[1] = -32
 
@@ -538,15 +528,15 @@ while 1:
 								otherEntities.pos[1] = otherEntities.pos[1] - otherEntities.speed
 							if otherPieces.pos[1] <= otherEntities.pos[1]:
 								otherEntities.pos[1] = otherEntities.pos[1] + otherEntities.speed
-						if (otherEntities.doesCollide(ourPiece)):
-							if ourPiece.pos[0] > otherEntities.pos[0]:
-								otherEntities.pos[0] = otherEntities.pos[0] - otherEntities.speed 
-							if ourPiece.pos[0] <= otherEntities.pos[0]:
-								otherEntities.pos[0] = otherEntities.pos[0] + otherEntities.speed
-							if ourPiece.pos[1] > otherEntities.pos[1]:
-								otherEntities.pos[1] = otherEntities.pos[1] - otherEntities.speed
-							if ourPiece.pos[1] <= otherEntities.pos[1]:
-								otherEntities.pos[1] = otherEntities.pos[1] + otherEntities.speed
+				if (otherEntities.doesCollide(ourPiece)):
+					if ourPiece.pos[0] > otherEntities.pos[0]:
+						otherEntities.pos[0] = otherEntities.pos[0] - otherEntities.speed 
+					if ourPiece.pos[0] <= otherEntities.pos[0]:
+						otherEntities.pos[0] = otherEntities.pos[0] + otherEntities.speed
+					if ourPiece.pos[1] > otherEntities.pos[1]:
+						otherEntities.pos[1] = otherEntities.pos[1] - otherEntities.speed
+					if ourPiece.pos[1] <= otherEntities.pos[1]:
+						otherEntities.pos[1] = otherEntities.pos[1] + otherEntities.speed
 
 			if otherEntities.pos[0] < 0:
 				otherEntities.pos[0] = 0
@@ -566,15 +556,15 @@ while 1:
 								otherEntities.pos[1] = otherEntities.pos[1] - otherEntities.speed
 							if otherPieces.pos[1] <= otherEntities.pos[1]:
 								otherEntities.pos[1] = otherEntities.pos[1] + otherEntities.speed
-						if (otherEntities.doesCollide(ourPiece)):
-							if ourPiece.pos[0] > otherEntities.pos[0]:
-								otherEntities.pos[0] = otherEntities.pos[0] - otherEntities.speed 
-							if ourPiece.pos[0] <= otherEntities.pos[0]:
-								otherEntities.pos[0] = otherEntities.pos[0] + otherEntities.speed
-							if ourPiece.pos[1] > otherEntities.pos[1]:
-								otherEntities.pos[1] = otherEntities.pos[1] - otherEntities.speed
-							if ourPiece.pos[1] <= otherEntities.pos[1]:
-								otherEntities.pos[1] = otherEntities.pos[1] + otherEntities.speed
+				if (otherEntities.doesCollide(ourPiece)):
+					if ourPiece.pos[0] > otherEntities.pos[0]:
+						otherEntities.pos[0] = otherEntities.pos[0] - otherEntities.speed 
+					if ourPiece.pos[0] <= otherEntities.pos[0]:
+						otherEntities.pos[0] = otherEntities.pos[0] + otherEntities.speed
+					if ourPiece.pos[1] > otherEntities.pos[1]:
+						otherEntities.pos[1] = otherEntities.pos[1] - otherEntities.speed
+					if ourPiece.pos[1] <= otherEntities.pos[1]:
+						otherEntities.pos[1] = otherEntities.pos[1] + otherEntities.speed
 
 			if otherEntities.pos[1]+65 > ourScript.header[2]*32:
 				otherEntities.pos[1] = ourScript.header[2]*32- 65
@@ -594,15 +584,15 @@ while 1:
 								otherEntities.pos[1] = otherEntities.pos[1] - otherEntities.speed
 							if otherPieces.pos[1] <= otherEntities.pos[1]:
 								otherEntities.pos[1] = otherEntities.pos[1] + otherEntities.speed
-						if (otherEntities.doesCollide(ourPiece)):
-							if ourPiece.pos[0] > otherEntities.pos[0]:
-								otherEntities.pos[0] = otherEntities.pos[0] - otherEntities.speed 
-							if ourPiece.pos[0] <= otherEntities.pos[0]:
-								otherEntities.pos[0] = otherEntities.pos[0] + otherEntities.speed
-							if ourPiece.pos[1] > otherEntities.pos[1]:
-								otherEntities.pos[1] = otherEntities.pos[1] - otherEntities.speed
-							if ourPiece.pos[1] <= otherEntities.pos[1]:
-								otherEntities.pos[1] = otherEntities.pos[1] + otherEntities.speed
+				if (otherEntities.doesCollide(ourPiece)):
+					if ourPiece.pos[0] > otherEntities.pos[0]:
+						otherEntities.pos[0] = otherEntities.pos[0] - otherEntities.speed 
+					if ourPiece.pos[0] <= otherEntities.pos[0]:
+						otherEntities.pos[0] = otherEntities.pos[0] + otherEntities.speed
+					if ourPiece.pos[1] > otherEntities.pos[1]:
+						otherEntities.pos[1] = otherEntities.pos[1] - otherEntities.speed
+					if ourPiece.pos[1] <= otherEntities.pos[1]:
+						otherEntities.pos[1] = otherEntities.pos[1] + otherEntities.speed
 
 			if otherEntities.pos[0]+33 > ourScript.header[1]*32:
 				otherEntities.pos[0] = ourScript.header[2]*32 - 33

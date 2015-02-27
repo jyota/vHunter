@@ -13,7 +13,7 @@ class npcPiece(piece.Piece):
 			raise Exception("npcPiece ai_state not in npc_ai_states_allowed!")
 
 		self.current_astar_path = None  # hold A* path if one found
-		self.current_astar_dest = None
+		self.next_astar_node = None
 		self.movement_direction = None
 		super(npcPiece, self).__init__(filename, framesperdir, initpos, initdir, speed, stats, id, width, height)
 
@@ -37,10 +37,42 @@ class npcPiece(piece.Piece):
 
 	def calculate_astar_path(self, objective_location, grid):
 		self.current_astar_path = astar.create_path((int(round(self.colrect.left / 32.0, 0)), int(round(self.colrect.top / 32.0, 0))), objective_location, grid)
-		self.current_astar_dest = self.current_astar_path[0]
+		self.next_astar_node = 0
 
 	def choose_facing(self, player_pos):
-		if self.get_ai_state() == "chase_player":
+		this_state = self.get_ai_state()
+		if this_state ==  "chase_objective_location":
+			# A* path follow logic
+			if (self.next_astar_node != None) & (self.next_astar_node != len(self.current_astar_path)):
+				target_pos = self.current_astar_path[self.next_astar_node]
+				t_x = target_pos[0] * 32 
+				t_y = target_pos[1] * 32
+				if (self.next_astar_node < len(self.current_astar_path)) and (round((self.pos[0]) / 32.0, 1) == target_pos[0]) & (round((self.pos[1] + 32) / 32.0, 1) == target_pos[1]):
+					self.next_astar_node = self.next_astar_node + 1
+				else:
+					if ((self.current_astar_path[self.next_astar_node][0] == self.current_astar_path[self.next_astar_node - 1][0]) & ((self.pos[1] + 32) < t_y)):
+						self.animoffset = 2
+					elif ((self.current_astar_path[self.next_astar_node][0] == self.current_astar_path[self.next_astar_node - 1][0]) & ((self.pos[1] + 32) > t_y)):
+						self.animoffset = 0
+					elif (self.pos[0] < t_x):
+						self.animoffset = 3
+					else:
+						self.animoffset = 1
+				
+					# now set actual movement direction
+					if abs((self.pos[0]) - t_x) > abs((self.pos[1] + 32) - t_y):
+						if ((self.pos[0]) > t_x):
+							self.movement_direction = 1
+						else:
+							self.movement_direction = 3
+					else:	
+						if ((self.pos[1] + 32) > t_y):
+							self.movement_direction = 0
+						else:
+							self.movement_direction = 2
+			else:
+				self.movement_direction = None
+		elif this_state == "chase_player":
 			# basic player chasing logic
 			# first change animation offset only
 			# need to make the animation offsetting a little better
@@ -64,4 +96,6 @@ class npcPiece(piece.Piece):
 					self.movement_direction = 0
 				else:
 					self.movement_direction = 2
+		elif this_state == "stationary":
+			pass
 
