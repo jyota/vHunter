@@ -1,5 +1,6 @@
 import piece
 import astar
+import random
 # handles non-player controlled pieces, mainly because they'll require control outside of player's hands
 # and I don't want to add that to the Piece class since it is also used for the player.
 
@@ -15,6 +16,7 @@ class npcPiece(piece.Piece):
 		self.current_astar_path = None  # hold A* path if one found
 		self.next_astar_node = None
 		self.movement_direction = None
+		self.does_chase_player = (random.randint(0, 10) > 5) # randomly determine if piece should chase player while in range
 		super(npcPiece, self).__init__(filename, framesperdir, initpos, initdir, speed, stats, id, width, height)
 
 	def set_ai_state(self, state):
