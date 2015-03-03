@@ -480,7 +480,7 @@ while 1:
 		if otherEntities.exploded == True:
 			ourEntities.removeEntity(ID = otherEntities.id)
 		otherEntities.moving = True
-
+		otherEntities.check_goal_state_shift(ourPiece.pos, astar.script_to_grid(ourScript), ourEntities)
 		# choose facing for piece animation, as well as movement direction
 		otherEntities.choose_facing(ourPiece.pos)
 

@@ -34,8 +34,21 @@ class npcPiece(piece.Piece):
 
 	def check_goal_state_shift(self, player_pos, grid, entity_list, threshold = 200):
 		# function will be used to determine whether to shift NPC state to one of the available states. 
-		# requires information about environment to make this decision, so whatever is relevant to do this will probably need to be passed in here.
-		pass
+		if (self.does_chase_player == True) and (self.ai_state == "chase_objective_location"):
+			if ((abs((self.pos[0] + 16) - (player_pos[0] + 16)) < 96) and (abs((self.pos[1] + 32) - (player_pos[1] + 32)) < 96)):
+				# need to add 'line of sight' logic-- if line projected from npc to player piece 
+				# intersects any impassable walls, don't give chase
+				self.ai_state = "chase_player"
+		elif (self.ai_state == "chase_player"):
+			if ((abs((self.pos[0] + 16) - (player_pos[0] + 16)) < 96) and (abs((self.pos[1] + 32) - (player_pos[1] + 32)) < 96)):
+				pass
+			else:
+				self.ai_state = "chase_objective_location"
+				# NEEDS ACTUAL LEGIT objective_location, JUST A FILLER
+				# Note, the piece will move to its previously calculated path without this next line, which isn't optimal from present location necessarily
+				# (it may have chased player a ways off the original path)
+				self.calculate_astar_path((22, 9), grid)    
+
 
 	def calculate_astar_path(self, objective_location, grid):
 		self.current_astar_path = astar.create_path((int(round(self.colrect.left / 32.0, 0)), int(round(self.colrect.top / 32.0, 0))), objective_location, grid)
