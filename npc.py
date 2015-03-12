@@ -1,6 +1,8 @@
 import piece
 import astar
 import random
+from pygame import Rect
+from geom_intersection import *
 # handles non-player controlled pieces, mainly because they'll require control outside of player's hands
 # and I don't want to add that to the Piece class since it is also used for the player.
 
@@ -16,6 +18,8 @@ class npcPiece(piece.Piece):
 		self.current_astar_path = None  # hold A* path if one found
 		self.next_astar_node = None
 		self.movement_direction = None
+		self.grid_rects = None
+		self.dont_play_around_increment = 0 # if piece switches to "chase player" 6 times, I want the piece to then only chase the goal.
 		self.does_chase_player = (random.randint(0, 10) > 5) # randomly determine if piece should chase player while in range
 		super(npcPiece, self).__init__(filename, framesperdir, initpos, initdir, speed, stats, id, width, height)
 
@@ -34,14 +38,56 @@ class npcPiece(piece.Piece):
 
 	def check_goal_state_shift(self, player_pos, grid, entity_list, threshold = 200):
 		# function will be used to determine whether to shift NPC state to one of the available states. 
+		# highly un-optimized right now...
 		if (self.does_chase_player == True) and (self.ai_state == "chase_objective_location"):
 			if ((abs((self.pos[0] + 16) - (player_pos[0] + 16)) < 96) and (abs((self.pos[1] + 32) - (player_pos[1] + 32)) < 96)):
-				# need to add 'line of sight' logic-- if line projected from npc to player piece 
-				# intersects any impassable walls, don't give chase
-				self.ai_state = "chase_player"
+				if self.grid_rects == None:
+					self.grid_rects = []
+					for y in range(len(grid)):
+						for x in range(len(grid[0])):
+							if grid[x][y] == False:
+								self.grid_rects.append(Rect((x * 32, y * 32), (32, 32)))
+
+				shiftState = True
+
+				for z in self.grid_rects:
+					res = calculateLineIntersectsRectangle((self.pos[0] + 16, self.pos[1] + 8), (player_pos[0] + 16, player_pos[1] + 58), z)
+					res2 = calculateLineIntersectsRectangle((self.pos[0], self.pos[1] + 8), (player_pos[0] + 16, player_pos[1] + 58), z)
+					res3 = calculateLineIntersectsRectangle((self.pos[0] + 31, self.pos[1] + 8), (player_pos[0] + 16, player_pos[1] + 58), z)
+					res4 = calculateLineIntersectsRectangle((self.pos[0] + 16, self.pos[1] + 64), (player_pos[0] + 16, player_pos[1] + 58), z)
+					res5 = calculateLineIntersectsRectangle((self.pos[0], self.pos[1] + 64), (player_pos[0] + 16, player_pos[1] + 58), z)
+					res6 = calculateLineIntersectsRectangle((self.pos[0] + 31, self.pos[1] + 64), (player_pos[0] + 16, player_pos[1] + 58), z)					
+					if ((len(res) > 0) or (len(res2) > 0) or (len(res3) > 0) or (len(res4) > 0) or (len(res5) > 0) or (len(res6) > 0)):
+						shiftState = False 
+						break
+
+				if (shiftState == True) and (self.dont_play_around_increment < 6):
+					self.ai_state = "chase_player"
+					self.dont_play_around_increment = self.dont_play_around_increment + 1
 		elif (self.ai_state == "chase_player"):
 			if ((abs((self.pos[0] + 16) - (player_pos[0] + 16)) < 96) and (abs((self.pos[1] + 32) - (player_pos[1] + 32)) < 96)):
-				pass
+				if self.grid_rects == None:
+					self.grid_rects = []
+					for y in range(len(grid)):
+						for x in range(len(grid[0])):
+							if grid[x][y] == False:
+								self.grid_rects.append(Rect((x * 32, y * 32), (32, 32)))
+				shiftState = False
+
+				for z in self.grid_rects:
+					res = calculateLineIntersectsRectangle((self.pos[0] + 16, self.pos[1] + 8), (player_pos[0] + 16, player_pos[1] + 58), z)
+					res2 = calculateLineIntersectsRectangle((self.pos[0], self.pos[1] + 8), (player_pos[0] + 16, player_pos[1] + 58), z)
+					res3 = calculateLineIntersectsRectangle((self.pos[0] + 31, self.pos[1] + 8), (player_pos[0] + 16, player_pos[1] + 58), z)
+					res4 = calculateLineIntersectsRectangle((self.pos[0] + 16, self.pos[1] + 58), (player_pos[0] + 16, player_pos[1] + 58), z)
+					res5 = calculateLineIntersectsRectangle((self.pos[0], self.pos[1] + 58), (player_pos[0] + 16, player_pos[1] + 58), z)
+					res6 = calculateLineIntersectsRectangle((self.pos[0] + 31, self.pos[1] + 58), (player_pos[0] + 16, player_pos[1] + 58), z)					
+					if ((len(res) > 0) or (len(res2) > 0) or (len(res3) > 0) or (len(res4) > 0) or (len(res5) > 0) or (len(res6) > 0)):
+						shiftState = True 
+						break
+
+				if shiftState == True:
+					self.ai_state = "chase_objective_location"
+					self.calculate_astar_path((22, 9), grid)    
 			else:
 				self.ai_state = "chase_objective_location"
 				# NEEDS ACTUAL LEGIT objective_location, JUST A FILLER
