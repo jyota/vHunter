@@ -19,6 +19,7 @@ class npcPiece(piece.Piece):
 		self.next_astar_node = None
 		self.movement_direction = None
 		self.grid_rects = None
+		self.only_stationary = False
 		self.dont_play_around_increment = 0 # if piece switches to "chase player" 6 times, I want the piece to then only chase the goal.
 		self.does_chase_player = (random.randint(0, 10) > 5) # randomly determine if piece should chase player while in range
 		super(npcPiece, self).__init__(filename, framesperdir, initpos, initdir, speed, stats, id, width, height)
@@ -33,13 +34,21 @@ class npcPiece(piece.Piece):
 	def get_ai_state(self):
 		return self.ai_state
 
+	def toggle_only_stationary(self):
+		if self.only_stationary == False:
+			self.only_stationary = True
+		else:
+			self.only_stationary = False
+
 	def get_movement_direction(self):
 		return self.movement_direction
 
 	def check_goal_state_shift(self, player_pos, grid, entity_list, threshold = 200):
 		# function will be used to determine whether to shift NPC state to one of the available states. 
 		# highly un-optimized right now...
-		if (self.does_chase_player == True) and (self.ai_state == "chase_objective_location"):
+		if self.only_stationary == True:
+			self.ai_state = "stationary"
+		elif (self.does_chase_player == True) and (self.ai_state == "chase_objective_location"):
 			if ((abs((self.pos[0] + 16) - (player_pos[0] + 16)) < 96) and (abs((self.pos[1] + 32) - (player_pos[1] + 32)) < 96)):
 				if self.grid_rects == None:
 					self.grid_rects = []
@@ -52,10 +61,10 @@ class npcPiece(piece.Piece):
 
 				for z in self.grid_rects:
 					res = calculateLineIntersectsRectangle((self.pos[0] + 16, self.pos[1] + 8), (player_pos[0] + 16, player_pos[1] + 58), z)
-					res2 = calculateLineIntersectsRectangle((self.pos[0], self.pos[1] + 8), (player_pos[0] + 16, player_pos[1] + 58), z)
+					res2 = calculateLineIntersectsRectangle((self.pos[0] + 2, self.pos[1] + 8), (player_pos[0] + 16, player_pos[1] + 58), z)
 					res3 = calculateLineIntersectsRectangle((self.pos[0] + 31, self.pos[1] + 8), (player_pos[0] + 16, player_pos[1] + 58), z)
 					res4 = calculateLineIntersectsRectangle((self.pos[0] + 16, self.pos[1] + 64), (player_pos[0] + 16, player_pos[1] + 58), z)
-					res5 = calculateLineIntersectsRectangle((self.pos[0], self.pos[1] + 64), (player_pos[0] + 16, player_pos[1] + 58), z)
+					res5 = calculateLineIntersectsRectangle((self.pos[0] + 2, self.pos[1] + 64), (player_pos[0] + 16, player_pos[1] + 58), z)
 					res6 = calculateLineIntersectsRectangle((self.pos[0] + 31, self.pos[1] + 64), (player_pos[0] + 16, player_pos[1] + 58), z)					
 					if ((len(res) > 0) or (len(res2) > 0) or (len(res3) > 0) or (len(res4) > 0) or (len(res5) > 0) or (len(res6) > 0)):
 						shiftState = False 
@@ -76,10 +85,10 @@ class npcPiece(piece.Piece):
 
 				for z in self.grid_rects:
 					res = calculateLineIntersectsRectangle((self.pos[0] + 16, self.pos[1] + 8), (player_pos[0] + 16, player_pos[1] + 58), z)
-					res2 = calculateLineIntersectsRectangle((self.pos[0], self.pos[1] + 8), (player_pos[0] + 16, player_pos[1] + 58), z)
+					res2 = calculateLineIntersectsRectangle((self.pos[0] + 2, self.pos[1] + 8), (player_pos[0] + 16, player_pos[1] + 58), z)
 					res3 = calculateLineIntersectsRectangle((self.pos[0] + 31, self.pos[1] + 8), (player_pos[0] + 16, player_pos[1] + 58), z)
 					res4 = calculateLineIntersectsRectangle((self.pos[0] + 16, self.pos[1] + 58), (player_pos[0] + 16, player_pos[1] + 58), z)
-					res5 = calculateLineIntersectsRectangle((self.pos[0], self.pos[1] + 58), (player_pos[0] + 16, player_pos[1] + 58), z)
+					res5 = calculateLineIntersectsRectangle((self.pos[0] + 2, self.pos[1] + 58), (player_pos[0] + 16, player_pos[1] + 58), z)
 					res6 = calculateLineIntersectsRectangle((self.pos[0] + 31, self.pos[1] + 58), (player_pos[0] + 16, player_pos[1] + 58), z)					
 					if ((len(res) > 0) or (len(res2) > 0) or (len(res3) > 0) or (len(res4) > 0) or (len(res5) > 0) or (len(res6) > 0)):
 						shiftState = True 
@@ -133,6 +142,7 @@ class npcPiece(piece.Piece):
 							self.movement_direction = 2
 			else:
 				self.movement_direction = None
+				self.ai_state = "stationary"
 		elif this_state == "chase_player":
 			# basic player chasing logic
 			# first change animation offset only

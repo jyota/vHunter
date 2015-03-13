@@ -130,3 +130,9 @@ class Piece(object):
 	def explode(self):
 		self.exploding = True
 
+	def damage(self, amount):
+		self.stats.hp = self.stats.hp - amount
+
+	def heal(self, amount):
+		self.stats.hp = self.stats.hp + amount
+
