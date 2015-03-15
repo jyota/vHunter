@@ -294,6 +294,7 @@ while 1:
 			if len(ourEntities._list) > 0:
 				for piece in ourEntities._list:
 					if (geom_system.does_collide(piece.fullrect) == True):
+						piece.damage_iterator = piece.damage_threshhold # instant damage
 						piece.damage(50) # arbitrary 50 damage for now, for any number of line crossings
 
 			geom_system.hits_calculated = True
