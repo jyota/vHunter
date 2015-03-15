@@ -25,6 +25,7 @@ class npcPiece(piece.Piece):
 		self.current_goal = current_goal
 		self.attack_initialized = False
 		self._attack_images = []
+		self.attacking_what = None
 		self.dont_play_around_increment = 0 # if piece switches to "chase player" 6 times, I want the piece to then only chase the goal.
 		self.does_chase_player = (random.randint(0, 10) > 5) # randomly determine if piece should chase player while in range
 		super(npcPiece, self).__init__(filename, framesperdir, initpos, initdir, speed, stats, id, width, height)
@@ -81,27 +82,56 @@ class npcPiece(piece.Piece):
 		if player_pos != None:
 			if ((self.pos[0] + 16) >= (player_pos[0] - 10)) and ((self.pos[0] + 16) <= (player_pos[0] + 40)) and ((self.pos[1] + 36) <= (player_pos[1] + 64)) and ((self.pos[1] + 36) > (player_pos[1] + 32)):
 				self.ai_state = "attacking"
+				self.attacking_what = "player"
 				self.attack_data_shift(0)
 			elif ((self.pos[0] + 16) >= (player_pos[0] - 10)) and ((self.pos[0] + 16) <= (player_pos[0] + 40)) and ((self.pos[1] + 62) >= (player_pos[1] + 32)) and ((self.pos[1] + 64) < (player_pos[1] + 64)):
 				self.ai_state = "attacking"
+				self.attacking_what = "player"				
 				self.attack_data_shift(2)
 			elif ((self.pos[0] - 2) <= (player_pos[0] + 26)) and (self.pos[0] > (player_pos[0] + 26)) and ((self.pos[1] + 32) >= (player_pos[1] + 6)) and ((self.pos[1] + 32) < (player_pos[1] + 58)):
 				self.ai_state = "attacking"
+				self.attacking_what = "player"				
 				self.attack_data_shift(1)			
 			elif ((self.pos[0] + 28) >= player_pos[0]) and (self.pos[0] < player_pos[0]) and ((self.pos[1] + 32) >= (player_pos[1] + 6)) and ((self.pos[1] + 32) < (player_pos[1] + 58)):
 				self.ai_state = "attacking"
+				self.attacking_what = "player"				
 				self.attack_data_shift(3)
 			elif self.ai_state == "attacking":
 				self.ai_state = self.previous_ai_state
+				self.attacking_what = None
+				self.attack_data_shift(None)
+		if goal_piece_pos != None:
+			if ((self.pos[0] + 16) >= (goal_piece_pos[0] - 10)) and ((self.pos[0] + 16) <= (goal_piece_pos[0] + 40)) and ((self.pos[1] + 36) <= (goal_piece_pos[1] + 64)) and ((self.pos[1] + 36) > (goal_piece_pos[1] + 32)):
+				self.ai_state = "attacking"
+				self.attacking_what = "goal"				
+				self.attack_data_shift(0)
+			elif ((self.pos[0] + 16) >= (goal_piece_pos[0] - 10)) and ((self.pos[0] + 16) <= (goal_piece_pos[0] + 40)) and ((self.pos[1] + 62) >= (goal_piece_pos[1] + 32)) and ((self.pos[1] + 64) < (goal_piece_pos[1] + 64)):
+				self.ai_state = "attacking"
+				self.attacking_what = "goal"				
+				self.attack_data_shift(2)
+			elif ((self.pos[0] - 2) <= (goal_piece_pos[0] + 26)) and (self.pos[0] > (goal_piece_pos[0] + 26)) and ((self.pos[1] + 32) >= (goal_piece_pos[1] + 6)) and ((self.pos[1] + 32) < (goal_piece_pos[1] + 58)):
+				self.ai_state = "attacking"
+				self.attacking_what = "goal"				
+				self.attack_data_shift(1)			
+			elif ((self.pos[0] + 28) >= goal_piece_pos[0]) and (self.pos[0] < goal_piece_pos[0]) and ((self.pos[1] + 32) >= (goal_piece_pos[1] + 6)) and ((self.pos[1] + 32) < (goal_piece_pos[1] + 58)):
+				self.ai_state = "attacking"
+				self.attacking_what = "goal"				
+				self.attack_data_shift(3)
+			elif self.ai_state == "attacking":
+				self.ai_state = self.previous_ai_state
+				self.attacking_what = None
 				self.attack_data_shift(None)
 
-	def check_goal_state_shift(self, player_pos, grid, entity_list, threshold = 200):
+	def check_goal_state_shift(self, player_pos, goal_piece_pos, grid, entity_list, threshold = 200):
 		# function will be used to determine whether to shift NPC state to one of the available states. 
 		# highly un-optimized right now...
 		if (self.only_stationary == True):
 			self.ai_state = "stationary"
 		elif self.ai_state == "attacking":
-			self.should_attack_shift(player_pos = player_pos, goal_piece_pos = (25, 25)) # need to change goal piece pos, just filler for now
+			if (self.previous_ai_state == "chase_player"):
+				self.should_attack_shift(player_pos = player_pos, goal_piece_pos = None)
+			if (self.previous_ai_state == "chase_objective_location"):
+				self.should_attack_shift(player_pos = None, goal_piece_pos = goal_piece_pos)
 		elif (self.does_chase_player == True) and (self.ai_state == "chase_objective_location"):
 			if ((abs((self.pos[0] + 16) - (player_pos[0] + 16)) < 96) and (abs((self.pos[1] + 32) - (player_pos[1] + 32)) < 96)):
 				if self.grid_rects == None:
@@ -128,8 +158,6 @@ class npcPiece(piece.Piece):
 					self.previous_ai_state = self.ai_state
 					self.ai_state = "chase_player"
 					self.dont_play_around_increment = self.dont_play_around_increment + 1
-				elif shiftState == False:
-					self.should_attack_shift(goal_piece_pos = (25, 25)) # filler position! need to change
 		elif (self.ai_state == "chase_player"):
 			if ((abs((self.pos[0] + 16) - (player_pos[0] + 16)) < 96) and (abs((self.pos[1] + 32) - (player_pos[1] + 32)) < 96)):
 				if self.grid_rects == None:
@@ -161,7 +189,9 @@ class npcPiece(piece.Piece):
 				self.previous_ai_state = self.ai_state
 				self.ai_state = "chase_objective_location"
 				self.calculate_astar_path(grid)    
-
+		if (self.ai_state == "chase_objective_location"):
+			if ((abs((self.pos[0] + 16) - (goal_piece_pos[0] + 16)) <= 18) and (abs((self.pos[1] + 32) - (goal_piece_pos[1] + 32)) <= 34)):
+				self.should_attack_shift(player_pos = None, goal_piece_pos = goal_piece_pos)
 
 	def calculate_astar_path(self, grid):
 		self.current_astar_path = astar.create_path((int(round(self.colrect.left / 32.0, 0)), int(round(self.colrect.top / 32.0, 0))), self.current_goal, grid)

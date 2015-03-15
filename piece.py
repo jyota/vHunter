@@ -21,7 +21,7 @@ class Piece(object):
 		self.stats = stats
 		self.id = id
 		self.width = width
-		self.height = height		
+		self.height = height	
 		self.colrect = pygame.Rect(initpos[0]+2, initpos[1]+36, 30,28)
 		# fullrect is for checking full body collision to geometry system
 		self.fullrect = pygame.Rect(initpos[0], initpos[1], 32, 64)
@@ -31,6 +31,8 @@ class Piece(object):
 		self.exploding_seq = range(1, 640, 4)
 		self.exploding_iterator = -1
 		self.exploded = False
+		self.damage_iterator = 0
+		self.damage_threshhold = 30
 
 		#Based on 32x64 sprites
 		self.rect = (initpos[0], initpos[1], 32,64)
@@ -131,8 +133,16 @@ class Piece(object):
 		self.exploding = True
 
 	def damage(self, amount):
-		self.stats.hp = self.stats.hp - amount
+		if self.damage_iterator < self.damage_threshhold:
+			self.damage_iterator = self.damage_iterator + 1
+		else:
+			self.stats.hp = self.stats.hp - amount
+			self.damage_iterator = 0
 
 	def heal(self, amount):
-		self.stats.hp = self.stats.hp + amount
+		if self.damage_iterator < self.damage_threshhold:
+			self.damage_iterator = self.damage_iterator + 1
+		else:
+			self.stats.hp = self.stats.hp + amount
+			self.damage_iterator = 0
 

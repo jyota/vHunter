@@ -205,11 +205,13 @@ pygame.mouse.set_visible(True)
 ourPiece = Piece("testchr.png", 3, [488, 150], 2, 2, PStats(hp = 100), 'PLAYER', 32, 64)
 ourEntities = entities()
 ourEntities.addEntity(npcPiece("baddie.png", 3, [352,232], 2, 1, PStats(hp = 100), 'BADDIE5', 32, 64, ai_state = "chase_objective_location", attack_image_filename = "baddie_attack.png"))
-ourEntities.addEntity(npcPiece("baddie.png", 3, [320,200], 2, 1, PStats(hp = 100), 'BADDIE', 32, 64, ai_state = "chase_objective_location", attack_image_filename = "baddie_attack.png"))
+ourEntities.addEntity(npcPiece("baddie.png", 3, [320,200], 2, 1, PStats(hp = 100), 'BADDIE4', 32, 64, ai_state = "chase_objective_location", attack_image_filename = "baddie_attack.png"))
+ourEntities.addEntity(npcPiece("baddie.png", 3, [872,200], 2, 1, PStats(hp = 100), 'BADDIE3', 32, 64, ai_state = "chase_objective_location", attack_image_filename = "baddie_attack.png"))
 ourEntities.addEntity(npcPiece("lady.png", 3, [22*32, 9*32 - 32], 2, 1, PStats(hp = 100), 'FAMILY', 32, 64, ai_state = "stationary"))
 #ourEntities.addEntity(npcPiece("baddie.png", 3, [360,260], 2, 1, PStats(hp = 100), 'BADDIE2', 32, 64, ai_state = "stationary"))
 #ourEntities.addEntity(npcPiece("eilf2b.png", 3, [360,320], 2, 1, PStats(hp = 100), 'BADDIE3', 32, 64, ai_state = "stationary"))
 #ourEntities.addEntity(npcPiece("baddie.png", 3, [352,200], 2, 1, PStats(hp = 100), 'BADDIE4', 32, 64, ai_state = "stationary"))
+goal_piece_pos = [22*32, 9*32 - 32] # same as 'FAMILY' piece above
 
 #command line arguments
 if(len(sys.argv)>0):
@@ -258,6 +260,7 @@ for k in range(ourScript.header[0]):
 # just testing pathfinding with A*
 ourEntities._list[0].calculate_astar_path(astar.script_to_grid(ourScript))
 ourEntities._list[1].calculate_astar_path(astar.script_to_grid(ourScript))
+ourEntities._list[2].calculate_astar_path(astar.script_to_grid(ourScript))
 
 while 1:
 	clock.tick(60) #keep the framerate at 60 or lower
@@ -482,10 +485,19 @@ while 1:
 			ourEntities.removeEntity(ID = otherEntities.id)
 		otherEntities.moving = True
 		
-		if otherEntities.get_ai_state() == "stationary":
-			otherEntities.update(0, redrawOnly = True)
+		if (otherEntities.get_ai_state() == "stationary"):
+			otherEntities.update(None, redrawOnly = True)
+		elif (otherEntities.get_ai_state() == "attacking"):
+			otherEntities.check_goal_state_shift(ourPiece.pos, goal_piece_pos, astar.script_to_grid(ourScript), ourEntities)			
+			otherEntities.update(None, redrawOnly = False)
+			if otherEntities.attacking_what == "player":
+				ourPiece.damage(10)
+			elif otherEntities.attacking_what == "goal":
+				for z in ourEntities._list:
+					if z.id == "FAMILY":
+						z.damage(10)
 		else:
-			otherEntities.check_goal_state_shift(ourPiece.pos, astar.script_to_grid(ourScript), ourEntities)
+			otherEntities.check_goal_state_shift(ourPiece.pos, goal_piece_pos, astar.script_to_grid(ourScript), ourEntities)
 			# choose facing for piece animation, as well as movement direction
 			otherEntities.choose_facing(ourPiece.pos)
 
@@ -625,6 +637,9 @@ while 1:
 	for j in range(1, ourMap.header[5]):
 		map_renderer.render_layer(screen, offs_x, offs_y, j)
 
+
+	if ourPiece.moving == False:
+		ourPiece.update(None, True)
 	ourPiece.moving = False
 	
 	if(showDetails == True):
