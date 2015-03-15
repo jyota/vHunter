@@ -1,6 +1,7 @@
 import piece
 import astar
 import random
+import pygame
 from pygame import Rect
 from geom_intersection import *
 # handles non-player controlled pieces, mainly because they'll require control outside of player's hands
@@ -20,7 +21,9 @@ class npcPiece(piece.Piece):
 		self.movement_direction = None
 		self.grid_rects = None
 		self.only_stationary = False
+		self.previous_ai_state = None
 		self.current_goal = current_goal
+		self.attack_initialized = False
 		self._attack_images = []
 		self.dont_play_around_increment = 0 # if piece switches to "chase player" 6 times, I want the piece to then only chase the goal.
 		self.does_chase_player = (random.randint(0, 10) > 5) # randomly determine if piece should chase player while in range
@@ -53,24 +56,52 @@ class npcPiece(piece.Piece):
 	def get_movement_direction(self):
 		return self.movement_direction
 
+	def attack_data_shift(self, direction):
+		if self.attack_initialized == False and self.ai_state == "attacking":
+			oldImages = self._images 
+			self._images = self._attack_images
+			self._attack_images = oldImages	
+			self.movement_direction = None
+			self.animoffset = direction	
+			self._delay = 125
+			self.attack_initialized = True
+		elif self.ai_state != "attacking":
+			self.attack_initialized = False
+			oldImages = self._images 
+			self._images = self._attack_images
+			self._attack_images = oldImages
+			self._delay = 250
+		elif self.ai_state == "attacking":
+			self.animoffset = direction
 
-	def should_attack_shift(self, player_pos):
-		if ((self.pos[0] + 16) >= (player_pos[0] + 2)) and ((self.pos[0] + 16) <= (player_pos[0] + 28)) and ((self.pos[1] + 36) <= (player_pos[1] + 64)) and ((self.pos[1] + 36) > (player_pos[1] + 32)):
-			self.ai_state = "attacking"
-			print "attacking_up"
-		elif ((self.pos[0] + 16) >= (player_pos[0] + 2)) and ((self.pos[0] + 16) <= (player_pos[0] + 28)) and ((self.pos[1] + 66) >= (player_pos[1] + 32)) and ((self.pos[1] + 64) < (player_pos[1] + 64)):
-			self.ai_state = "attacking"
-			print "attacking_down"
-		elif ((self.pos[0] + 16) >= (player_pos[0] + 2)) and ((self.pos[0] + 16) <= (player_pos[0] + 28)) and ((self.pos[1] + 66) >= (player_pos[1] + 32)) and ((self.pos[1] + 64) < (player_pos[1] + 64)):
+	def should_attack_shift(self, player_pos = None, goal_piece_pos = None):
+		if self.ai_state != "attacking":
+			self.previous_ai_state = self.ai_state
 
+		if player_pos != None:
+			if ((self.pos[0] + 16) >= (player_pos[0] - 10)) and ((self.pos[0] + 16) <= (player_pos[0] + 40)) and ((self.pos[1] + 36) <= (player_pos[1] + 64)) and ((self.pos[1] + 36) > (player_pos[1] + 32)):
+				self.ai_state = "attacking"
+				self.attack_data_shift(0)
+			elif ((self.pos[0] + 16) >= (player_pos[0] - 10)) and ((self.pos[0] + 16) <= (player_pos[0] + 40)) and ((self.pos[1] + 62) >= (player_pos[1] + 32)) and ((self.pos[1] + 64) < (player_pos[1] + 64)):
+				self.ai_state = "attacking"
+				self.attack_data_shift(2)
+			elif ((self.pos[0] - 2) <= (player_pos[0] + 26)) and (self.pos[0] > (player_pos[0] + 26)) and ((self.pos[1] + 32) >= (player_pos[1] + 6)) and ((self.pos[1] + 32) < (player_pos[1] + 58)):
+				self.ai_state = "attacking"
+				self.attack_data_shift(1)			
+			elif ((self.pos[0] + 28) >= player_pos[0]) and (self.pos[0] < player_pos[0]) and ((self.pos[1] + 32) >= (player_pos[1] + 6)) and ((self.pos[1] + 32) < (player_pos[1] + 58)):
+				self.ai_state = "attacking"
+				self.attack_data_shift(3)
+			elif self.ai_state == "attacking":
+				self.ai_state = self.previous_ai_state
+				self.attack_data_shift(None)
 
 	def check_goal_state_shift(self, player_pos, grid, entity_list, threshold = 200):
 		# function will be used to determine whether to shift NPC state to one of the available states. 
 		# highly un-optimized right now...
-		self.should_attack_shift(player_pos)
-
-		if (self.only_stationary == True) and (self.ai_state != "attacking"):
+		if (self.only_stationary == True):
 			self.ai_state = "stationary"
+		elif self.ai_state == "attacking":
+			self.should_attack_shift(player_pos = player_pos, goal_piece_pos = (25, 25)) # need to change goal piece pos, just filler for now
 		elif (self.does_chase_player == True) and (self.ai_state == "chase_objective_location"):
 			if ((abs((self.pos[0] + 16) - (player_pos[0] + 16)) < 96) and (abs((self.pos[1] + 32) - (player_pos[1] + 32)) < 96)):
 				if self.grid_rects == None:
@@ -94,8 +125,11 @@ class npcPiece(piece.Piece):
 						break
 
 				if (shiftState == True) and (self.dont_play_around_increment < 6):
+					self.previous_ai_state = self.ai_state
 					self.ai_state = "chase_player"
 					self.dont_play_around_increment = self.dont_play_around_increment + 1
+				elif shiftState == False:
+					self.should_attack_shift(goal_piece_pos = (25, 25)) # filler position! need to change
 		elif (self.ai_state == "chase_player"):
 			if ((abs((self.pos[0] + 16) - (player_pos[0] + 16)) < 96) and (abs((self.pos[1] + 32) - (player_pos[1] + 32)) < 96)):
 				if self.grid_rects == None:
@@ -118,11 +152,15 @@ class npcPiece(piece.Piece):
 						break
 
 				if shiftState == True:
+					self.previous_ai_state = self.ai_state
 					self.ai_state = "chase_objective_location"
-					self.calculate_astar_path(self.current_goal, grid)    
+					self.calculate_astar_path(grid) 
+				else:
+					self.should_attack_shift(player_pos = player_pos)
 			else:
+				self.previous_ai_state = self.ai_state
 				self.ai_state = "chase_objective_location"
-				self.calculate_astar_path(self.current_goal, grid)    
+				self.calculate_astar_path(grid)    
 
 
 	def calculate_astar_path(self, grid):
@@ -163,7 +201,7 @@ class npcPiece(piece.Piece):
 			else:
 				self.movement_direction = None
 				self.ai_state = "stationary"
-		elif (this_state == "chase_player") or (this_state == "attacking"):
+		elif (this_state == "chase_player"):
 			# basic player chasing logic
 			# first change animation offset only
 			# need to make the animation offsetting a little better
@@ -187,9 +225,5 @@ class npcPiece(piece.Piece):
 					self.movement_direction = 0
 				else:
 					self.movement_direction = 2
-		elif this_state == "stationary":
-			self.movement_direction = None
-			pass
 
-
-
+	
