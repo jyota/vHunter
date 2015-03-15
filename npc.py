@@ -9,7 +9,7 @@ from geom_intersection import *
 npc_ai_states_allowed = ("stationary", "chase_player", "chase_objective_location", "attacking") # list of possible AI states
 
 class npcPiece(piece.Piece):
-	def __init__(self, filename, framesperdir, initpos = [0,0],  initdir = None, speed = None, stats = None, id = None, width = 32, height = 64, ai_state = None):
+	def __init__(self, filename, framesperdir, initpos = [0,0],  initdir = None, speed = None, stats = None, id = None, width = 32, height = 64, ai_state = None, attack_image_filename = None, current_goal = (22, 9)):
 		if any(ai_state in i for i in npc_ai_states_allowed):
 			self.ai_state = ai_state
 		else:
@@ -20,9 +20,19 @@ class npcPiece(piece.Piece):
 		self.movement_direction = None
 		self.grid_rects = None
 		self.only_stationary = False
+		self.current_goal = current_goal
+		self._attack_images = []
 		self.dont_play_around_increment = 0 # if piece switches to "chase player" 6 times, I want the piece to then only chase the goal.
 		self.does_chase_player = (random.randint(0, 10) > 5) # randomly determine if piece should chase player while in range
 		super(npcPiece, self).__init__(filename, framesperdir, initpos, initdir, speed, stats, id, width, height)
+		if attack_image_filename != None:
+			image = pygame.image.load(attack_image_filename).convert()
+
+			for j in range(0, (image.get_height()/64)):
+				for i in range(0, (image.get_width()/32)):
+					self._attack_images.append(image.subsurface(Rect((i*32, j*32, 32, 64))).convert())
+					self._attack_images[len(self._attack_images) - 1].set_colorkey((0, 0, 0))
+		
 
 	def set_ai_state(self, state):
 		if any(state in i for i in npc_ai_states_allowed):
@@ -43,10 +53,23 @@ class npcPiece(piece.Piece):
 	def get_movement_direction(self):
 		return self.movement_direction
 
+
+	def should_attack_shift(self, player_pos):
+		if ((self.pos[0] + 16) >= (player_pos[0] + 2)) and ((self.pos[0] + 16) <= (player_pos[0] + 28)) and ((self.pos[1] + 36) <= (player_pos[1] + 64)) and ((self.pos[1] + 36) > (player_pos[1] + 32)):
+			self.ai_state = "attacking"
+			print "attacking_up"
+		elif ((self.pos[0] + 16) >= (player_pos[0] + 2)) and ((self.pos[0] + 16) <= (player_pos[0] + 28)) and ((self.pos[1] + 66) >= (player_pos[1] + 32)) and ((self.pos[1] + 64) < (player_pos[1] + 64)):
+			self.ai_state = "attacking"
+			print "attacking_down"
+		elif ((self.pos[0] + 16) >= (player_pos[0] + 2)) and ((self.pos[0] + 16) <= (player_pos[0] + 28)) and ((self.pos[1] + 66) >= (player_pos[1] + 32)) and ((self.pos[1] + 64) < (player_pos[1] + 64)):
+
+
 	def check_goal_state_shift(self, player_pos, grid, entity_list, threshold = 200):
 		# function will be used to determine whether to shift NPC state to one of the available states. 
 		# highly un-optimized right now...
-		if self.only_stationary == True:
+		self.should_attack_shift(player_pos)
+
+		if (self.only_stationary == True) and (self.ai_state != "attacking"):
 			self.ai_state = "stationary"
 		elif (self.does_chase_player == True) and (self.ai_state == "chase_objective_location"):
 			if ((abs((self.pos[0] + 16) - (player_pos[0] + 16)) < 96) and (abs((self.pos[1] + 32) - (player_pos[1] + 32)) < 96)):
@@ -96,17 +119,14 @@ class npcPiece(piece.Piece):
 
 				if shiftState == True:
 					self.ai_state = "chase_objective_location"
-					self.calculate_astar_path((22, 9), grid)    
+					self.calculate_astar_path(self.current_goal, grid)    
 			else:
 				self.ai_state = "chase_objective_location"
-				# NEEDS ACTUAL LEGIT objective_location, JUST A FILLER
-				# Note, the piece will move to its previously calculated path without this next line, which isn't optimal from present location necessarily
-				# (it may have chased player a ways off the original path)
-				self.calculate_astar_path((22, 9), grid)    
+				self.calculate_astar_path(self.current_goal, grid)    
 
 
-	def calculate_astar_path(self, objective_location, grid):
-		self.current_astar_path = astar.create_path((int(round(self.colrect.left / 32.0, 0)), int(round(self.colrect.top / 32.0, 0))), objective_location, grid)
+	def calculate_astar_path(self, grid):
+		self.current_astar_path = astar.create_path((int(round(self.colrect.left / 32.0, 0)), int(round(self.colrect.top / 32.0, 0))), self.current_goal, grid)
 		self.next_astar_node = 0
 
 	def choose_facing(self, player_pos):
@@ -143,7 +163,7 @@ class npcPiece(piece.Piece):
 			else:
 				self.movement_direction = None
 				self.ai_state = "stationary"
-		elif this_state == "chase_player":
+		elif (this_state == "chase_player") or (this_state == "attacking"):
 			# basic player chasing logic
 			# first change animation offset only
 			# need to make the animation offsetting a little better
@@ -168,5 +188,8 @@ class npcPiece(piece.Piece):
 				else:
 					self.movement_direction = 2
 		elif this_state == "stationary":
+			self.movement_direction = None
 			pass
+
+
 

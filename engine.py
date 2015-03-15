@@ -256,8 +256,8 @@ for k in range(ourScript.header[0]):
 
 
 # just testing pathfinding with A*
-ourEntities._list[0].calculate_astar_path((22, 9), astar.script_to_grid(ourScript))
-ourEntities._list[1].calculate_astar_path((20, 8), astar.script_to_grid(ourScript))
+ourEntities._list[0].calculate_astar_path(astar.script_to_grid(ourScript))
+ourEntities._list[1].calculate_astar_path(astar.script_to_grid(ourScript))
 
 while 1:
 	clock.tick(60) #keep the framerate at 60 or lower
