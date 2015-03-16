@@ -242,7 +242,7 @@ timeTicks = 0
 lastScriptEventTime = 0
 map_renderer = MapRenderer(ourMap)
 map_renderer.prepare_layers()
-action_meter = meter(0, 300, 300, 1, True)
+action_meter = meter(0, 300, 300, 1, True, color = (255, 0, 255))
 geom_system = geom_draw_system()
 # code for testing animated line geometry
 #testLine = animated_line([(480, 32), (480, 32), (480, 32), (480, 32)], [(360, 64), (400, 98), (440, 128), (480, 164)], (255, 0, 0), 2, 10, anim_looping = True)
@@ -262,6 +262,11 @@ ourEntities._list[0].calculate_astar_path(astar.script_to_grid(ourScript))
 ourEntities._list[1].calculate_astar_path(astar.script_to_grid(ourScript))
 ourEntities._list[2].calculate_astar_path(astar.script_to_grid(ourScript))
 
+#ourEntities._list[0].does_chase_player = True
+#ourEntities._list[1].does_chase_player = True
+#ourEntities._list[2].does_chase_player = True
+
+
 while 1:
 	clock.tick(60) #keep the framerate at 60 or lower
 	timeTicks = pygame.time.get_ticks()
@@ -271,20 +276,20 @@ while 1:
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
 			sys.exit()
-		if (event.type == pygame.MOUSEMOTION) & (geom_system.is_mode_enabled() == True):
+		if (event.type == pygame.MOUSEMOTION) & (geom_system.is_mode_enabled() == True) & (ourPiece.exploded == False) & (ourPiece.exploding == False):
 			geom_system.update_mode_mouse_position(pygame.mouse.get_pos())
-		if (event.type == pygame.MOUSEBUTTONDOWN) & (geom_system.is_mode_enabled() == True):
+		if (event.type == pygame.MOUSEBUTTONDOWN) & (geom_system.is_mode_enabled() == True) & (ourPiece.exploded == False) & (ourPiece.exploding == False):
 			geom_system.press_mouse_click()
 			
 	key=pygame.key.get_pressed()
 	if key[pygame.K_q]: 
 		sys.exit()
 
-	if (key[pygame.K_LCTRL]) & (geom_system.is_mode_button_pressed() == False):
+	if (key[pygame.K_LCTRL]) & (geom_system.is_mode_button_pressed() == False) & (ourPiece.exploded == False) & (ourPiece.exploding == False):
 		geom_system.press_mode_button(ourPiece.pos[0] + 16 - offs_x, ourPiece.pos[1] + 32 - offs_y, action_meter.get_value())
 		geom_system.update_mode_mouse_position(pygame.mouse.get_pos())
 
-	if (key[pygame.K_LALT]) & (geom_system.is_mode_enabled() == True):
+	if ((key[pygame.K_LALT]) & (geom_system.is_mode_enabled() == True)) or (ourPiece.exploded == True) or (ourPiece.exploding == True):
 		geom_system.__init__()
 
 	if geom_system.is_mode_enabled() == False:
@@ -469,12 +474,10 @@ while 1:
 
 	if(offs_x < 0): offs_x = 0
 	if(offs_y < 0): offs_y = 0
-	#print ourMap.header[3]*32
 	if(ourPiece.pos[0] + 320 > (ourMap.header[3]*32)): offs_x = (ourMap.header[3]*32) - 640
 	if(ourPiece.pos[1] + 240 > (ourMap.header[4]*32)): offs_y = (ourMap.header[4]*32) - 480 
 	
 	screen.fill((0,0,0,0))
-	#maprender.draw_map(screen,ourMap,offs_x, offs_y, 0)
 	map_renderer.render_layer(screen, offs_x, offs_y, 0)
 
 	# begin entity draw 
@@ -488,7 +491,7 @@ while 1:
 		
 		if (otherEntities.get_ai_state() == "stationary"):
 			otherEntities.update(None, redrawOnly = True)
-		elif (otherEntities.get_ai_state() == "attacking"):
+		elif (otherEntities.get_ai_state() == "attacking") and (otherEntities.exploding == False) and (otherEntities.exploded == False):
 			otherEntities.check_goal_state_shift(ourPiece.pos, goal_piece_pos, astar.script_to_grid(ourScript), ourEntities)			
 			otherEntities.update(None, redrawOnly = False)
 			if otherEntities.attacking_what == "player":
@@ -627,17 +630,24 @@ while 1:
 		if (otherEntities.pos[1] + 64 > ourPiece.pos[1] + 64) & (pHasDrawn == 0):
 			ourPiece.draw(screen, offs_x, offs_y)
 			otherEntities.draw(screen, offs_x, offs_y)
+			if ourPiece.stats.hp > 0:
+				ourPiece.hp_meter.render_bar(screen)
+			if otherEntities.stats.hp > 0:
+				otherEntities.hp_meter.render_bar(screen)
 			
 			pHasDrawn = 1
 		else:
 			otherEntities.draw(screen, offs_x, offs_y)
+			if otherEntities.stats.hp > 0:
+				otherEntities.hp_meter.render_bar(screen)
+			
 
 	if(pHasDrawn==0):
 		ourPiece.draw(screen,offs_x,offs_y)
+		ourPiece.hp_meter.render_bar(screen)
 	
 	for j in range(1, ourMap.header[5]):
 		map_renderer.render_layer(screen, offs_x, offs_y, j)
-
 
 	if ourPiece.moving == False:
 		ourPiece.update(None, True)
@@ -651,13 +661,11 @@ while 1:
 		screen = gui.draw_text_block(15, 58, screen, "Current FPS: " + str(clock.get_fps()))
 		screen = gui.draw_text_block(15, 78, screen, "Action Meter: " + str(action_meter.get_value()))
 
-# code for testing animated line geometry
-	#testLine.update([offs_x, offs_y])
-	#testLine.draw(screen)
+	# code for testing animated line geometry
 	if geom_system.is_mode_enabled() == True:
 		geom_system.draw_system(screen, (255, 0, 0))
 
 	action_meter.render_bar(screen)
-	
+
 	pygame.display.update()
 

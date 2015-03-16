@@ -2,6 +2,7 @@ import piece
 import astar
 import random
 import pygame
+import math
 from pygame import Rect
 from geom_intersection import *
 # handles non-player controlled pieces, mainly because they'll require control outside of player's hands
@@ -78,45 +79,46 @@ class npcPiece(piece.Piece):
 	def should_attack_shift(self, player_pos = None, goal_piece_pos = None):
 		if self.ai_state != "attacking":
 			self.previous_ai_state = self.ai_state
-
 		if player_pos != None:
-			if ((self.pos[0] + 16) >= (player_pos[0] - 10)) and ((self.pos[0] + 16) <= (player_pos[0] + 40)) and ((self.pos[1] + 36) <= (player_pos[1] + 64)) and ((self.pos[1] + 36) > (player_pos[1] + 32)):
-				self.ai_state = "attacking"
-				self.attacking_what = "player"
-				self.attack_data_shift(0)
-			elif ((self.pos[0] + 16) >= (player_pos[0] - 10)) and ((self.pos[0] + 16) <= (player_pos[0] + 40)) and ((self.pos[1] + 62) >= (player_pos[1] + 32)) and ((self.pos[1] + 64) < (player_pos[1] + 64)):
-				self.ai_state = "attacking"
-				self.attacking_what = "player"				
-				self.attack_data_shift(2)
-			elif ((self.pos[0] - 2) <= (player_pos[0] + 26)) and (self.pos[0] > (player_pos[0] + 26)) and ((self.pos[1] + 32) >= (player_pos[1] + 6)) and ((self.pos[1] + 32) < (player_pos[1] + 58)):
+			eucl_dist = math.sqrt((float(self.pos[0] + 16) - float(player_pos[0] + 16))**2 + (float(self.pos[1] + 32) - float(player_pos[1] + 32))**2)				
+			if (eucl_dist <= 30.0) and ((self.pos[0] + 16) >= (player_pos[0] + 16)) and ((self.pos[1] + 32) >= (player_pos[1] + 6)) and ((self.pos[1] + 32) < (player_pos[1] + 58)):	
 				self.ai_state = "attacking"
 				self.attacking_what = "player"				
 				self.attack_data_shift(1)			
-			elif ((self.pos[0] + 28) >= player_pos[0]) and (self.pos[0] < player_pos[0]) and ((self.pos[1] + 32) >= (player_pos[1] + 6)) and ((self.pos[1] + 32) < (player_pos[1] + 58)):
+			elif (eucl_dist <= 30.0) and ((self.pos[0] + 16) < (player_pos[0] + 16)) and ((self.pos[1] + 32) >= (player_pos[1] + 6)) and ((self.pos[1] + 32) < (player_pos[1] + 58)):
 				self.ai_state = "attacking"
 				self.attacking_what = "player"				
-				self.attack_data_shift(3)
+				self.attack_data_shift(3)			
+			elif (eucl_dist <= 30.0) and ((self.pos[0] + 16) >= (player_pos[0] - 10)) and ((self.pos[0] + 16) <= (player_pos[0] + 40)) and ((self.pos[1] + 36) <= (player_pos[1] + 64)) and ((self.pos[1] + 36) > (player_pos[1] + 32)):
+				self.ai_state = "attacking"
+				self.attacking_what = "player"
+				self.attack_data_shift(0)
+			elif (eucl_dist <= 30.0) and ((self.pos[0] + 16) >= (player_pos[0] - 10)) and ((self.pos[0] + 16) <= (player_pos[0] + 40)) and ((self.pos[1] + 62) >= (player_pos[1] + 32)) and ((self.pos[1] + 64) < (player_pos[1] + 64)):
+				self.ai_state = "attacking"
+				self.attacking_what = "player"				
+				self.attack_data_shift(2)
 			elif self.ai_state == "attacking":
 				self.ai_state = self.previous_ai_state
 				self.attacking_what = None
 				self.attack_data_shift(None)
 		if goal_piece_pos != None:
-			if ((self.pos[0] + 16) >= (goal_piece_pos[0] - 10)) and ((self.pos[0] + 16) <= (goal_piece_pos[0] + 40)) and ((self.pos[1] + 36) <= (goal_piece_pos[1] + 64)) and ((self.pos[1] + 36) > (goal_piece_pos[1] + 32)):
-				self.ai_state = "attacking"
-				self.attacking_what = "goal"				
-				self.attack_data_shift(0)
-			elif ((self.pos[0] + 16) >= (goal_piece_pos[0] - 10)) and ((self.pos[0] + 16) <= (goal_piece_pos[0] + 40)) and ((self.pos[1] + 62) >= (goal_piece_pos[1] + 32)) and ((self.pos[1] + 64) < (goal_piece_pos[1] + 64)):
-				self.ai_state = "attacking"
-				self.attacking_what = "goal"				
-				self.attack_data_shift(2)
-			elif ((self.pos[0] - 2) <= (goal_piece_pos[0] + 26)) and (self.pos[0] > (goal_piece_pos[0] + 26)) and ((self.pos[1] + 32) >= (goal_piece_pos[1] + 6)) and ((self.pos[1] + 32) < (goal_piece_pos[1] + 58)):
+			eucl_dist = math.sqrt((float(self.pos[0] + 16) - float(goal_piece_pos[0] + 16))**2 + (float(self.pos[1] + 32) - float(goal_piece_pos[1] + 32))**2)					
+			if (eucl_dist <= 30.0) and ((self.pos[0] + 16) >= (goal_piece_pos[0] + 16)) and ((self.pos[1] + 32) >= (goal_piece_pos[1] + 6)) and ((self.pos[1] + 32) < (goal_piece_pos[1] + 58)):	
 				self.ai_state = "attacking"
 				self.attacking_what = "goal"				
 				self.attack_data_shift(1)			
-			elif ((self.pos[0] + 28) >= goal_piece_pos[0]) and (self.pos[0] < goal_piece_pos[0]) and ((self.pos[1] + 32) >= (goal_piece_pos[1] + 6)) and ((self.pos[1] + 32) < (goal_piece_pos[1] + 58)):
+			elif (eucl_dist <= 30.0) and ((self.pos[0] + 16) < (goal_piece_pos[0] + 16)) and ((self.pos[1] + 32) >= (goal_piece_pos[1] + 6)) and ((self.pos[1] + 32) < (goal_piece_pos[1] + 58)):
 				self.ai_state = "attacking"
 				self.attacking_what = "goal"				
-				self.attack_data_shift(3)
+				self.attack_data_shift(3)			
+			elif (eucl_dist <= 30.0) and ((self.pos[0] + 16) >= (goal_piece_pos[0] - 10)) and ((self.pos[0] + 16) <= (goal_piece_pos[0] + 40)) and ((self.pos[1] + 36) <= (goal_piece_pos[1] + 64)) and ((self.pos[1] + 36) > (goal_piece_pos[1] + 32)):
+				self.ai_state = "attacking"
+				self.attacking_what = "goal"
+				self.attack_data_shift(0)
+			elif (eucl_dist <= 30.0) and ((self.pos[0] + 16) >= (goal_piece_pos[0] - 10)) and ((self.pos[0] + 16) <= (goal_piece_pos[0] + 40)) and ((self.pos[1] + 62) >= (goal_piece_pos[1] + 32)) and ((self.pos[1] + 64) < (goal_piece_pos[1] + 64)):
+				self.ai_state = "attacking"
+				self.attacking_what = "goal"				
+				self.attack_data_shift(2)
 			elif self.ai_state == "attacking":
 				self.ai_state = self.previous_ai_state
 				self.attacking_what = None
@@ -144,9 +146,9 @@ class npcPiece(piece.Piece):
 				shiftState = True
 
 				for z in self.grid_rects:
-					res = calculateLineIntersectsRectangle((self.pos[0] + 16, self.pos[1] + 8), (player_pos[0] + 16, player_pos[1] + 58), z)
-					res2 = calculateLineIntersectsRectangle((self.pos[0] + 2, self.pos[1] + 8), (player_pos[0] + 16, player_pos[1] + 58), z)
-					res3 = calculateLineIntersectsRectangle((self.pos[0] + 31, self.pos[1] + 8), (player_pos[0] + 16, player_pos[1] + 58), z)
+					res = calculateLineIntersectsRectangle((self.pos[0] + 16, self.pos[1] + 32), (player_pos[0] + 16, player_pos[1] + 58), z)
+					res2 = calculateLineIntersectsRectangle((self.pos[0] + 2, self.pos[1] + 32), (player_pos[0] + 16, player_pos[1] + 58), z)
+					res3 = calculateLineIntersectsRectangle((self.pos[0] + 31, self.pos[1] + 32), (player_pos[0] + 16, player_pos[1] + 58), z)
 					res4 = calculateLineIntersectsRectangle((self.pos[0] + 16, self.pos[1] + 64), (player_pos[0] + 16, player_pos[1] + 58), z)
 					res5 = calculateLineIntersectsRectangle((self.pos[0] + 2, self.pos[1] + 64), (player_pos[0] + 16, player_pos[1] + 58), z)
 					res6 = calculateLineIntersectsRectangle((self.pos[0] + 31, self.pos[1] + 64), (player_pos[0] + 16, player_pos[1] + 58), z)					
@@ -169,9 +171,9 @@ class npcPiece(piece.Piece):
 				shiftState = False
 
 				for z in self.grid_rects:
-					res = calculateLineIntersectsRectangle((self.pos[0] + 16, self.pos[1] + 8), (player_pos[0] + 16, player_pos[1] + 58), z)
-					res2 = calculateLineIntersectsRectangle((self.pos[0] + 2, self.pos[1] + 8), (player_pos[0] + 16, player_pos[1] + 58), z)
-					res3 = calculateLineIntersectsRectangle((self.pos[0] + 31, self.pos[1] + 8), (player_pos[0] + 16, player_pos[1] + 58), z)
+					res = calculateLineIntersectsRectangle((self.pos[0] + 16, self.pos[1] + 32), (player_pos[0] + 16, player_pos[1] + 58), z)
+					res2 = calculateLineIntersectsRectangle((self.pos[0] + 2, self.pos[1] + 32), (player_pos[0] + 16, player_pos[1] + 58), z)
+					res3 = calculateLineIntersectsRectangle((self.pos[0] + 31, self.pos[1] + 32), (player_pos[0] + 16, player_pos[1] + 58), z)
 					res4 = calculateLineIntersectsRectangle((self.pos[0] + 16, self.pos[1] + 58), (player_pos[0] + 16, player_pos[1] + 58), z)
 					res5 = calculateLineIntersectsRectangle((self.pos[0] + 2, self.pos[1] + 58), (player_pos[0] + 16, player_pos[1] + 58), z)
 					res6 = calculateLineIntersectsRectangle((self.pos[0] + 31, self.pos[1] + 58), (player_pos[0] + 16, player_pos[1] + 58), z)					
@@ -192,6 +194,9 @@ class npcPiece(piece.Piece):
 		if (self.ai_state == "chase_objective_location"):
 			if ((abs((self.pos[0] + 16) - (goal_piece_pos[0] + 16)) <= 18) and (abs((self.pos[1] + 32) - (goal_piece_pos[1] + 32)) <= 34)):
 				self.should_attack_shift(player_pos = None, goal_piece_pos = goal_piece_pos)
+			elif ((abs((self.pos[0] + 16) - (player_pos[0] + 16)) <= 24) and (abs((self.pos[1] + 32) - (player_pos[1] + 32)) <= 34)):
+				self.should_attack_shift(player_pos = player_pos, goal_piece_pos = None)
+				
 
 	def calculate_astar_path(self, grid):
 		self.current_astar_path = astar.create_path((int(round(self.colrect.left / 32.0, 0)), int(round(self.colrect.top / 32.0, 0))), self.current_goal, grid)

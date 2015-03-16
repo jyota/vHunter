@@ -1,4 +1,5 @@
 import pygame
+from meter import *
 from pygame import Rect
 from pygame import Surface
 
@@ -33,6 +34,7 @@ class Piece(object):
 		self.exploded = False
 		self.damage_iterator = 0
 		self.damage_threshhold = 30
+		self.hp_meter = meter(0, self.stats.hp, self.stats.hp, 1, width = 30, height = 4, x = initpos[0], y = initpos[1])
 
 		#Based on 32x64 sprites
 		self.rect = (initpos[0], initpos[1], 32,64)
@@ -77,6 +79,7 @@ class Piece(object):
 		self.colrect = pygame.Rect(self.pos[0]+8, self.pos[1]+36, 18, 26)
 
 	def draw(self, surface, offsx, offsy):
+		self.hp_meter.update_pos(self.pos[0] - offsx, self.pos[1] - offsy + 8)		
 		self.fullrect = pygame.Rect(self.pos[0] - offsx, self.pos[1] - offsy, 32, 64)
 		
 		if (self.rect[0]+32 - offsx < 0) or (self.rect[1]+64 - offsy < 0) or (self.rect[0] - offsx > 672) or (self.rect[1] - offsy > 480):
@@ -138,6 +141,7 @@ class Piece(object):
 		else:
 			self.stats.hp = self.stats.hp - amount
 			self.damage_iterator = 0
+			self.hp_meter.sub(amount)
 
 	def heal(self, amount):
 		if self.damage_iterator < self.damage_threshhold:
@@ -145,4 +149,5 @@ class Piece(object):
 		else:
 			self.stats.hp = self.stats.hp + amount
 			self.damage_iterator = 0
+			self.hp_meter.add(amount)
 
